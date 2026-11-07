@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CloudSister – protótipo</title>
+  <style>
+    /* ---------- Cores e base ---------- */
+    :root {
+      /* Paleta original */
+      --lilas: #A78BFA;
+      --roxo: #6D28D9;
+      --rosa: #F472B6;
+      --rosa-claro: #FCE7F3;
+      --verde: #22C55E;
+      --verde-escuro: #15803D;
+      --vermelho: #F43F5E;
+      --vermelho-escuro: #BE123C;
+      --laranja: #FB923C;
+      /* Estilo editorial (revista rosa): rosa forte + contorno preto */
+      --rosa-forte: #D10A78;   /* passa no contraste AA com texto branco */
+      --rosa-brilho: #F0148C;  /* só decorativo (luzes do fundo) */
+      --tinta: #1A1014;        /* contornos e texto principal */
+      --suave: #4A3A5C;
+      /* Fontes: título geométrico, letra cursiva de destaque, corpo arredondado */
+      --fonte-titulo: "Poppins", "Montserrat", "Avenir Next", "Century Gothic", "Futura", "Segoe UI", sans-serif;
+      --fonte-script: "Bodoni 72", "Didot", "Playfair Display", "Georgia", serif;
+      --fonte-corpo: "Nunito", "Varela Round", ui-rounded, "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: var(--fonte-corpo);
+      background: #F9D6E8;
+      color: var(--tinta);
+      display: flex;
+      justify-content: center;
+    }
+    /* Moldura mobile: máx. 400px, centralizada, com luzes rosa nos cantos */
+    .app {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: 400px;
+      min-height: 100vh;
+      padding: 16px 20px 40px;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(244, 114, 182, .55), transparent 42%),
+        radial-gradient(circle at 100% 28%, rgba(240, 20, 140, .28), transparent 38%),
+        radial-gradient(circle at 0% 78%, rgba(244, 114, 182, .42), transparent 40%),
+        radial-gradient(circle at 100% 100%, rgba(167, 139, 250, .38), transparent 42%),
+        #FFF5FA;
+    }
+    .tela { display: none; flex-direction: column; gap: 16px; position: relative; }
+    .tela.ativa { display: flex; }
+
+    h2 { font-family: var(--fonte-titulo); font-size: 1.45rem; font-weight: 800; line-height: 1.6; letter-spacing: -.02em; }
+    h3 { font-size: 1.1rem; font-weight: 800; }
+    h1:focus, h2:focus { outline: none; }
+    p { line-height: 1.5; }
+    .suave { color: var(--suave); }
+    .centro { text-align: center; }
+    .pequeno { font-size: .85rem; }
+
+    /* ---------- Estilo revista ---------- */
+    /* Cabeçalho pequeno em caixa alta, como capa de revista */
+    .cabecalho-revista {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      font-family: var(--fonte-titulo);
+      font-size: .68rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .cabecalho-revista span:last-child { text-transform: none; }
+
+    /* Títulos em faixas: rosa com texto branco ou branca com texto preto */
+    .titulo-revista {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--fonte-titulo);
+    }
+    .faixa {
+      display: inline-block;
+      padding: 0 .28em .08em;
+      border: 2px solid var(--tinta);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -.03em;
+    }
+    .faixa.rosa { background: var(--rosa-forte); color: #fff; }
+    .faixa.branca { background: #fff; color: var(--tinta); }
+    .gigante { font-size: 3.5rem; }
+    .media { font-size: 1.45rem; }
+
+    /* Marca-texto para os títulos das telas (quebra de linha mantém a faixa) */
+    .marca {
+      background: var(--rosa-forte);
+      color: #fff;
+      padding: .05em .35em;
+      border: 2px solid var(--tinta);
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
+    .marca.branca { background: #fff; color: var(--tinta); }
+
+    /* Letra cursiva de destaque (como o "C" da referência) */
+    .script { font-family: var(--fonte-script); font-style: italic; font-weight: 700; letter-spacing: 0; font-size: 1.15em; }
+    .script.inicial {
+      position: relative;
+      top: .06em;
+      margin-left: -.3em;
+      font-size: 1.4em;
+      line-height: .8;
+      color: var(--tinta);
+    }
+    .rosa-texto { color: var(--rosa-forte); font-style: normal; }
+
+    /* Linha fina + "pt. 1" */
+    .linha-assinatura { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .traco { width: 90px; height: 2px; background: var(--tinta); }
+    .assinatura { font-family: var(--fonte-titulo); font-size: 1.4rem; font-weight: 800; font-style: italic; }
+
+    /* Texto corrido pequeno e justificado */
+    .texto-revista { font-size: .8rem; line-height: 1.4; text-align: justify; hyphens: auto; }
+
+    /* Brilhos ✦ decorativos */
+    .brilho {
+      position: absolute;
+      color: #fff;
+      text-shadow: 0 0 6px #fff, 0 0 14px var(--rosa);
+      pointer-events: none;
+      animation: pisca 2.8s ease-in-out infinite;
+    }
+    @keyframes pisca { 50% { opacity: .35; transform: scale(.8); } }
+
+    /* ---------- Botão estilo Duolingo (sombra embaixo) ---------- */
+    .btn {
+      font: inherit;
+      font-weight: 800;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      width: 100%;
+      min-height: 52px;
+      padding: 12px 20px;
+      border: 2px solid var(--tinta);
+      border-radius: 16px;
+      background: var(--rosa-forte);
+      color: #fff;
+      box-shadow: 0 4px 0 var(--tinta);
+      cursor: pointer;
+    }
+    .btn:active { transform: translateY(4px); box-shadow: none; }
+    .btn.secundario { background: #fff; color: var(--tinta); }
+    .btn.texto {
+      background: none;
+      border: none;
+      box-shadow: none;
+      color: var(--rosa-forte);
+      width: auto;
+      min-height: 44px;
+      padding: 8px 4px;
+    }
+    .btn.texto:active { transform: none; }
+    button:focus-visible, input:focus-visible { outline: 3px solid var(--roxo); outline-offset: 2px; }
+
+    /* Botão redondo de ícone (sino dos alertas) */
+    .btn-icone {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid var(--tinta);
+      background: #fff;
+      font-size: 1.3rem;
+      box-shadow: 0 3px 0 var(--tinta);
+      cursor: pointer;
+    }
+    .btn-icone:active { transform: translateY(3px); box-shadow: none; }
+    /* Bolinha rosa = alertas ligados */
+    .btn-icone.ativo::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--rosa-forte);
+      border: 2px solid #fff;
+    }
+
+    .card {
+      background: #fff;
+      border: 2px solid var(--tinta);
+      border-radius: 20px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card.rosado { background: var(--rosa-claro); }
+
+    /* ---------- Boas-vindas ---------- */
+    .logo { font-size: 4.5rem; text-align: center; animation: flutua 2.4s ease-in-out infinite; }
+    @keyframes flutua { 50% { transform: translateY(-8px); } }
+
+    /* ---------- Formulário ---------- */
+    label { font-weight: 700; font-size: .9rem; color: var(--suave); display: flex; flex-direction: column; gap: 6px; }
+    input {
+      font: inherit;
+      font-size: 1rem;
+      min-height: 52px;
+      padding: 0 16px;
+      border: 2px solid var(--tinta);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--tinta);
+    }
+    input:focus { border-color: var(--rosa-forte); }
+    .avatares { display: flex; gap: 12px; flex-wrap: wrap; }
+    .avatar {
+      font-size: 2rem;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      background: var(--rosa-claro);
+      cursor: pointer;
+    }
+    .avatar[aria-checked="true"] { border-color: var(--rosa-forte); background: #FBCFE8; }
+    .msg-erro { color: var(--vermelho-escuro); font-weight: 700; min-height: 1.4em; }
+
+    /* ---------- Home ---------- */
+    .topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .acoes-topo { display: flex; align-items: center; gap: 8px; }
+    .chip { background: #fff; border: 2px solid var(--tinta); border-radius: 999px; padding: 6px 12px; font-weight: 800; }
+    .chip.ofensiva { background: #FFEDD5; }
+    .barra { height: 16px; background: #FBCFE8; border: 2px solid var(--tinta); border-radius: 999px; overflow: hidden; }
+    .barra > div { height: 100%; width: 0; background: var(--rosa-forte); transition: width .4s; }
+    .caminho { display: flex; flex-direction: column; align-items: center; gap: 22px; padding: 8px 0 16px; }
+    .pilula {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      border: 2px solid var(--tinta);
+      font: inherit;
+      font-size: 1.7rem;
+      font-weight: 800;
+      background: var(--rosa-forte);
+      color: #fff;
+      box-shadow: 0 6px 0 var(--tinta);
+      cursor: pointer;
+    }
+    /* Zigue-zague do caminho */
+    .pilula:nth-child(4n+2) { margin-left: 110px; }
+    .pilula:nth-child(4n) { margin-right: 110px; }
+    .pilula:active { transform: translateY(6px); box-shadow: none; }
+    .pilula.bloqueada { background: #F3F4F6; color: #4B5563; border-color: #9CA3AF; box-shadow: 0 6px 0 #9CA3AF; cursor: not-allowed; }
+    .pilula.feita { background: var(--verde); color: #052E16; }
+    .aviso { background: var(--rosa-claro); border: 2px solid var(--tinta); border-radius: 16px; padding: 12px; font-weight: 700; }
+    .aviso.perigo { background: #FFEDD5; border-color: var(--laranja); }
+    .aviso.ok { background: #DCFCE7; border-color: var(--verde); color: var(--verde-escuro); }
+
+    /* ---------- Flashcard que vira ---------- */
+    .flash { perspective: 800px; height: 170px; width: 100%; border: none; background: none; padding: 0; cursor: pointer; font: inherit; }
+    .flash-miolo { position: relative; width: 100%; height: 100%; transition: transform .5s; transform-style: preserve-3d; }
+    .flash.virado .flash-miolo { transform: rotateY(180deg); }
+    .face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border: 2px solid var(--tinta);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+    .face small { font-size: .8rem; font-weight: 700; opacity: .85; }
+    .frente { background: var(--rosa-claro); color: var(--tinta); }
+    .verso { background: var(--rosa-forte); color: #fff; font-weight: 600; transform: rotateY(180deg); }
+
+    /* ---------- Questões ---------- */
+    .opcao {
+      font: inherit;
+      font-weight: 700;
+      text-align: left;
+      width: 100%;
+      min-height: 52px;
+      padding: 12px 16px;
+      border: 2px solid var(--tinta);
+      border-bottom-width: 5px;
+      border-radius: 16px;
+      background: #fff;
+      color: var(--tinta);
+      cursor: pointer;
+    }
+    .opcao:disabled { cursor: default; }
+    .opcao.certa { background: var(--verde); color: #052E16; }
+    .opcao.errada { background: #FFE4E6; border-color: var(--vermelho); color: var(--vermelho-escuro); }
+    .opcoes { display: flex; flex-direction: column; gap: 10px; }
+    .pergunta { font-family: var(--fonte-titulo); font-size: 1.3rem; line-height: 1.3; }
+    .cenario { background: var(--rosa-claro); border-left: 6px solid var(--rosa-forte); border-radius: 12px; padding: 12px 14px; }
+    .feedback { border-radius: 16px; padding: 14px; font-weight: 700; line-height: 1.45; }
+    .feedback.ok { background: #DCFCE7; color: var(--verde-escuro); }
+    .feedback.erro { background: #FFE4E6; color: var(--vermelho-escuro); }
+
+    /* ---------- Alertas ---------- */
+    .linha-switch { flex-direction: row; align-items: center; justify-content: space-between; }
+    /* Interruptor liga/desliga */
+    .switch {
+      position: relative;
+      flex-shrink: 0;
+      width: 60px;
+      height: 34px;
+      padding: 0;
+      border-radius: 999px;
+      border: 2px solid var(--tinta);
+      background: #E5E7EB;
+      cursor: pointer;
+    }
+    .switch::after { content: ''; position: absolute; inset: -6px; } /* área de toque ≥ 44px */
+    .switch span {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--tinta);
+      transition: transform .2s;
+    }
+    .switch[aria-checked="true"] { background: var(--rosa-forte); }
+    .switch[aria-checked="true"] span { transform: translateX(26px); }
+
+    .campos { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+    .campos:disabled { opacity: .45; }
+    .dias, .metas { display: flex; gap: 6px; }
+    .dia, .meta {
+      flex: 1;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0;
+      border: 2px solid var(--tinta);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--tinta);
+      font: inherit;
+      font-size: .85rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .dia[aria-pressed="true"], .meta[aria-checked="true"] { background: var(--rosa-forte); color: #fff; }
+    .campos:disabled .dia, .campos:disabled .meta { cursor: not-allowed; }
+
+    /* Notificação simulada (prévia e banner) */
+    .notif {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, .97);
+      border: 2px solid var(--tinta);
+      border-radius: 18px;
+      box-shadow: 0 10px 24px rgba(209, 10, 120, .25);
+      text-align: left;
+    }
+    .notif-icone {
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--rosa-forte);
+      font-size: 1.3rem;
+    }
+    .notif-app { font-size: .75rem; font-weight: 700; color: var(--suave); }
+    .notif-titulo { font-weight: 800; line-height: 1.3; }
+    .notif-texto { font-size: .85rem; color: var(--suave); }
+
+    /* Banner que desce do topo ao testar o alerta */
+    .toast {
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      z-index: 10;
+      width: min(376px, calc(100% - 24px));
+      transform: translate(-50%, -160%);
+      visibility: hidden;
+      transition: transform .35s ease, visibility .35s;
+    }
+    .toast.mostrar { transform: translate(-50%, 0); visibility: visible; transition: transform .35s ease; }
+    .toast .notif { padding-right: 48px; }
+    .toast-fechar {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 44px;
+      height: 44px;
+      border: none;
+      background: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .nota-prototipo { font-size: .8rem; text-align: center; color: var(--suave); }
+
+    /* ---------- Resultado ---------- */
+    .festa { font-size: 5rem; text-align: center; margin-top: 30px; animation: pula .6s ease 3; }
+    @keyframes pula { 50% { transform: scale(1.2) rotate(-8deg); } }
+
+    /* Respeita quem prefere menos movimento */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+<main class="app">
+
+  <!-- Brilhos decorativos -->
+  <span class="brilho" style="top: 70px; left: 14px; font-size: 22px;" aria-hidden="true">✦</span>
+  <span class="brilho" style="top: 210px; right: 18px; font-size: 16px; animation-delay: .8s;" aria-hidden="true">✦</span>
+  <span class="brilho" style="top: 430px; left: 22px; font-size: 14px; animation-delay: 1.4s;" aria-hidden="true">✦</span>
+  <span class="brilho" style="top: 560px; right: 26px; font-size: 24px; animation-delay: .4s;" aria-hidden="true">✦</span>
+
+  <!-- Cabeçalho de revista -->
+  <header class="cabecalho-revista" aria-hidden="true">
+    <span>CloudSister | Trilhas Cloud</span>
+    <span>@cloudsister.app</span>
+  </header>
+
+  <!-- Banner de alerta simulado (aparece ao testar) -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="notif">
+      <div class="notif-icone" aria-hidden="true">☁️</div>
+      <div>
+        <p class="notif-app">CloudSister · agora</p>
+        <p class="notif-titulo"></p>
+        <p class="notif-texto"></p>
+      </div>
+    </div>
+    <button class="toast-fechar" id="toast-fechar" aria-label="Fechar alerta">✕</button>
+  </div>
+
+  <!-- 1. Boas-vindas -->
+  <section class="tela ativa" id="tela-boas-vindas">
+    <h1 class="titulo-revista" aria-label="CloudSister">
+      <span class="faixa rosa gigante" aria-hidden="true">cloud</span>
+      <span class="faixa rosa gigante" aria-hidden="true"><span class="script inicial">S</span>ister</span>
+    </h1>
+    <div class="logo" aria-hidden="true">💜☁️</div>
+    <p class="titulo-revista">
+      <span class="faixa branca media">carreiras que talvez</span>
+      <span class="faixa branca media">você <em class="rosa-texto">não</em> conhece</span>
+    </p>
+    <div class="linha-assinatura" aria-hidden="true"><span class="traco"></span><span class="assinatura">pt. 1</span></div>
+    <p class="texto-revista">
+      Arquiteta de soluções, engenheira de segurança e muitas outras. Em poucos minutos por dia, o CloudSister
+      apresenta as carreiras em cloud, ajuda você a descobrir a sua e acompanha cada passo com pílulas rápidas,
+      flashcards e desafios do dia a dia, com alertas para você não perder o ritmo.
+    </p>
+    <button class="btn" data-ir="tela-cadastro">Começar</button>
+  </section>
+
+  <!-- 2. Cadastro (nada é salvo) -->
+  <section class="tela" id="tela-cadastro">
+    <h2><span class="marca">crie seu</span> <span class="marca branca"><span class="script">p</span>erfil</span></h2>
+    <p class="suave">Protótipo: use dados de exemplo. Nada é salvo.</p>
+    <form id="form-cadastro" class="tela ativa" novalidate>
+      <label>Nome <input id="nome" autocomplete="off" placeholder="Ex.: Ana" /></label>
+      <label>Idade <input id="idade" type="number" inputmode="numeric" placeholder="Ex.: 22" /></label>
+      <label>E-mail <input id="email" type="email" placeholder="ana@exemplo.com" /></label>
+      <h3 id="rotulo-avatar">Escolha seu avatar</h3>
+      <div class="avatares" role="radiogroup" aria-labelledby="rotulo-avatar">
+        <button type="button" class="avatar" role="radio" aria-checked="false" aria-label="Foguete">🚀</button>
+        <button type="button" class="avatar" role="radio" aria-checked="false" aria-label="Borboleta">🦋</button>
+        <button type="button" class="avatar" role="radio" aria-checked="false" aria-label="Escudo">🛡️</button>
+        <button type="button" class="avatar" role="radio" aria-checked="false" aria-label="Girassol">🌻</button>
+      </div>
+      <p class="msg-erro" id="erro-cadastro" aria-live="polite"></p>
+      <button class="btn" type="submit">Continuar</button>
+    </form>
+  </section>
+
+  <!-- 2b. Questionário de perfil do público (logo após o cadastro) -->
+  <section class="tela" id="tela-publico">
+    <div id="publico-conteudo" class="tela ativa" aria-live="polite"></div>
+  </section>
+
+  <!-- 3. Pergunta-chave -->
+  <section class="tela" id="tela-pergunta">
+    <div class="logo" aria-hidden="true">🤔☁️</div>
+    <p class="centro suave" id="pergunta-saudacao"></p>
+    <h2 class="centro"><span class="marca">Você já sabe o que quer seguir em tech?</span></h2>
+    <button class="btn" data-ir="tela-trilhas">Sim</button>
+    <button class="btn secundario" id="btn-nao">Não</button>
+  </section>
+
+  <!-- 3a. Escolha direta de trilha -->
+  <section class="tela" id="tela-trilhas">
+    <h2><span class="marca">escolha sua</span> <span class="marca branca"><span class="script">t</span>rilha</span></h2>
+    <div class="card">
+      <h3>🏗️ Cloud Architect</h3>
+      <p class="suave">Conversa com clientes e desenha soluções na nuvem.</p>
+      <button class="btn" data-trilha="architect">Escolher</button>
+    </div>
+    <div class="card">
+      <h3>🛡️ Cloud Security</h3>
+      <p class="suave">Protege dados e acessos e investiga ameaças.</p>
+      <button class="btn" data-trilha="security">Escolher</button>
+    </div>
+  </section>
+
+  <!-- 3b. Perguntas de perfil + recomendação -->
+  <section class="tela" id="tela-perfil">
+    <div id="perfil-conteudo" class="tela ativa" aria-live="polite"></div>
+  </section>
+
+  <!-- 4. Home / trilha -->
+  <section class="tela" id="tela-home">
+    <div class="topo">
+      <h2><span class="marca" id="home-ola"></span></h2>
+      <div class="acoes-topo">
+        <span class="chip ofensiva" id="home-streak"></span>
+        <button class="btn-icone" id="btn-sino" aria-label="Configurar alertas das pílulas">🔔</button>
+      </div>
+    </div>
+    <p class="aviso" id="home-ofensiva" aria-live="polite"></p>
+    <div class="card">
+      <div class="topo">
+        <h3 id="home-trilha"></h3>
+        <span class="chip" id="home-xp"></span>
+      </div>
+      <div class="barra" role="progressbar" aria-label="Progresso da trilha" aria-valuemin="0" aria-valuemax="5" id="home-barra"><div></div></div>
+      <p class="suave" id="home-progresso"></p>
+    </div>
+    <!-- Resumo dos alertas -->
+    <div class="card rosado">
+      <div class="topo">
+        <h3>🔔 Alertas das pílulas</h3>
+        <span class="chip" id="home-alerta-status"></span>
+      </div>
+      <p id="home-alerta-texto"></p>
+      <button class="btn secundario" id="btn-home-alertas">Configurar alertas</button>
+    </div>
+    <div class="caminho" id="caminho"></div>
+    <p class="aviso" id="home-aviso" aria-live="polite" hidden></p>
+  </section>
+
+  <!-- 5. Alertas das pílulas -->
+  <section class="tela" id="tela-lembretes">
+    <h2><span class="marca"><span class="script">a</span>lertas</span> <span class="marca branca">das <em class="rosa-texto">pílulas</em></span></h2>
+    <p class="suave">
+      Escolha os dias e o horário. O CloudSister só avisa nesses dias e cancela o alerta do dia se você já tiver estudado.
+    </p>
+
+    <div class="card linha-switch">
+      <div>
+        <h3 id="rotulo-alertas">Receber alertas</h3>
+        <p class="suave pequeno">Notificação no celular</p>
+      </div>
+      <button class="switch" id="sw-alertas" role="switch" aria-checked="true" aria-labelledby="rotulo-alertas"><span></span></button>
+    </div>
+
+    <fieldset class="campos" id="alertas-campos" aria-label="Configurações dos alertas">
+      <div class="card">
+        <h3 id="rotulo-dias">Em quais dias?</h3>
+        <div class="dias" id="dias" role="group" aria-labelledby="rotulo-dias"></div>
+      </div>
+      <div class="card">
+        <label>Que horas? <input id="hora-alerta" type="time" value="19:00" /></label>
+      </div>
+      <div class="card">
+        <h3 id="rotulo-meta">Meta por dia</h3>
+        <div class="metas" id="metas" role="radiogroup" aria-labelledby="rotulo-meta"></div>
+      </div>
+    </fieldset>
+
+    <div class="card rosado">
+      <h3>Como o alerta vai aparecer</h3>
+      <div class="notif" id="notif-previa">
+        <div class="notif-icone" aria-hidden="true">☁️</div>
+        <div>
+          <p class="notif-app">CloudSister · 19:00</p>
+          <p class="notif-titulo"></p>
+          <p class="notif-texto"></p>
+        </div>
+      </div>
+      <p class="pequeno" id="proximo-alerta" aria-live="polite"></p>
+    </div>
+
+    <p class="msg-erro" id="erro-lembretes" aria-live="polite"></p>
+    <button class="btn secundario" id="btn-testar-alerta">🔔 Testar alerta agora</button>
+    <button class="btn" id="btn-salvar-lembretes">Salvar alertas</button>
+    <button class="btn texto" id="btn-lembretes-sair">Voltar sem salvar</button>
+    <p class="nota-prototipo">Protótipo: os alertas são simulados nesta tela. No app, eles chegam como notificação do celular.</p>
+  </section>
+
+  <!-- 6. Pílula 1 -->
+  <section class="tela" id="tela-pilula">
+    <div class="topo">
+      <button class="btn texto" data-ir="tela-home" aria-label="Sair da pílula">✕ Sair</button>
+      <span class="chip">Pílula 1</span>
+    </div>
+
+    <!-- Etapa de estudo: conceito + flashcard -->
+    <div id="etapa-estudo" class="tela ativa">
+      <h2><span class="marca">Conceitos de Cloud</span></h2>
+      <div class="card">
+        <h3>☁️ O que é cloud?</h3>
+        <p>É usar computadores, armazenamento e bancos de dados de um provedor (como a AWS) pela internet,
+          pagando só pelo que usar. Ela pode ser <b>IaaS</b> (você aluga a infraestrutura),
+          <b>PaaS</b> (a plataforma está pronta para seu código) ou <b>SaaS</b> (o software já vem pronto).</p>
+        <p>A AWS fica espalhada em <b>Regiões</b>, e cada Região tem várias <b>Zonas de Disponibilidade</b>.</p>
+      </div>
+      <button class="flash" id="flash" aria-label="Flashcard. Toque para virar.">
+        <div class="flash-miolo">
+          <div class="face frente">O que é uma Zona de Disponibilidade?<small>Toque para virar</small></div>
+          <div class="face verso" aria-hidden="true">Um ou mais data centers isolados dentro de uma Região. Usar várias zonas mantém o sistema no ar se uma falhar.</div>
+        </div>
+      </button>
+      <button class="btn" id="btn-ir-questoes">Ir para as questões</button>
+    </div>
+
+    <!-- Etapa de questões -->
+    <div id="etapa-questoes" class="tela">
+      <div class="barra" role="progressbar" aria-label="Progresso das questões" aria-valuemin="0" aria-valuemax="3" id="q-barra"><div></div></div>
+      <p class="suave" id="q-contador"></p>
+      <p class="cenario" id="q-cenario"></p>
+      <h2 class="pergunta" id="q-pergunta"></h2>
+      <div class="opcoes" id="q-opcoes"></div>
+      <p class="feedback" id="q-feedback" aria-live="polite" hidden></p>
+      <button class="btn" id="btn-continuar" hidden>Continuar</button>
+    </div>
+  </section>
+
+  <!-- 7. Resultado -->
+  <section class="tela" id="tela-resultado">
+    <div class="festa" aria-hidden="true">🎉</div>
+    <h2 class="centro"><span class="marca" id="res-titulo"></span></h2>
+    <p class="centro suave" id="res-detalhe"></p>
+    <p class="aviso" id="res-alerta"></p>
+    <button class="btn" data-ir="tela-home">Voltar para a trilha</button>
+    <button class="btn secundario" id="btn-res-alertas">🔔 Ver meus alertas</button>
+  </section>
+
+</main>
+
+<script>
+  // ---------- Estado em memória (nada é salvo) ----------
+  const estado = {
+    nome: '',
+    idade: 0,
+    avatar: '',
+    // Questionário de perfil do público
+    iPublico: 0,
+    respostasPublico: {},  // id da pergunta -> opção escolhida
+    perfilPublico: 'inicio',
+    competencias: [],
+    trilha: 'architect',
+    xp: 0,
+    concluidas: 0,   // pílulas concluídas na trilha
+    pontos: { architect: 0, security: 0 },
+    iPerfil: 0,      // pergunta de perfil atual
+    iQuestao: 0,     // questão atual da pílula
+    xpPilula: 0,
+    acertos: 0,
+    streak: 3,           // ofensiva de exemplo
+    estudouHoje: false,
+    // Alertas: dias da semana (0 = domingo), horário e meta diária em minutos
+    alertas: { ativo: true, dias: [1, 3, 5], hora: '19:00', meta: 10 },
+    alertasConfigurados: false,
+    rascunho: null,      // cópia editada na tela de alertas até salvar
+    lembretesOnboarding: false,
+    iMensagem: 0,        // qual texto de alerta mostrar
+  };
+
+  // ---------- Conteúdo ----------
+  const TRILHAS = {
+    architect: {
+      nome: '🏗️ Cloud Architect',
+      pilulas: ['Conceitos de Cloud', 'Serviços essenciais', 'Well-Architected', 'Alta disponibilidade e custos', 'Desafio final'],
+    },
+    security: {
+      nome: '🛡️ Cloud Security',
+      pilulas: ['Conceitos de Cloud', 'Identidade e acesso', 'Proteção de dados', 'Monitoramento', 'Desafio final'],
+    },
+  };
+
+  // Cada pergunta: opção "a" soma para architect, opção "s" para security
+  const PERFIL = [
+    { pergunta: 'Você prefere planejar soluções ou investigar problemas?', a: 'Planejar soluções', s: 'Investigar problemas' },
+    { pergunta: 'Num trabalho em grupo, você costuma…', a: 'Organizar o plano geral', s: 'Revisar se nada está errado' },
+    { pergunta: 'O que te deixa mais satisfeita?', a: 'Resolver o problema de alguém', s: 'Descobrir algo que estava escondido' },
+  ];
+
+  const QUESTOES = [
+    {
+      cenario: 'Um e-commerce cai na Black Friday e o cliente quer gastar pouco no resto do ano.',
+      pergunta: 'O que você sugere?',
+      opcoes: [
+        'Comprar mais servidores físicos para aguentar o pico',
+        'Usar escalabilidade automática: mais servidores no pico e menos depois',
+        'Tirar o site do ar durante a Black Friday',
+      ],
+      correta: 1,
+      explicacao: 'Na cloud você aumenta a capacidade só quando precisa e paga pelo uso. Servidores físicos ficariam parados o resto do ano.',
+    },
+    {
+      cenario: 'Você é arquiteta numa fintech. O app não pode parar se um data center tiver problema.',
+      pergunta: 'Qual a melhor escolha?',
+      opcoes: [
+        'Rodar o app em várias Zonas de Disponibilidade',
+        'Rodar tudo em uma única Zona, com um servidor maior',
+        'Fazer um backup por semana',
+      ],
+      correta: 0,
+      explicacao: 'Zonas de Disponibilidade são isoladas entre si: se uma falha, as outras mantêm o app no ar. Backup semanal não evita a queda.',
+    },
+    {
+      cenario: 'Uma ONG quer e-mail e planilhas online e não tem ninguém para cuidar de servidores.',
+      pergunta: 'Que modelo de cloud combina com ela?',
+      opcoes: ['IaaS', 'PaaS', 'SaaS'],
+      correta: 2,
+      explicacao: 'No SaaS o software já vem pronto e o provedor cuida de tudo. IaaS e PaaS exigiriam alguém técnico para configurar.',
+    },
+  ];
+
+  // Dias exibidos de segunda a domingo (n = número do dia no JavaScript)
+  const DIAS = [
+    { n: 1, curto: 'Seg', nome: 'Segunda' },
+    { n: 2, curto: 'Ter', nome: 'Terça' },
+    { n: 3, curto: 'Qua', nome: 'Quarta' },
+    { n: 4, curto: 'Qui', nome: 'Quinta' },
+    { n: 5, curto: 'Sex', nome: 'Sexta' },
+    { n: 6, curto: 'Sáb', nome: 'Sábado' },
+    { n: 0, curto: 'Dom', nome: 'Domingo' },
+  ];
+  const NOMES_DIA = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+  const METAS = [5, 10, 15];
+  // Textos dos alertas: variam a cada envio
+  const MENSAGENS = [
+    'Termine sua trilha hoje 🔥',
+    'Sua ofensiva de {n} dias está esperando!',
+    'Só {meta} minutinhos e você sobe de nível 💜',
+  ];
+
+  // ---------- Atalho e navegação ----------
+  const $ = (seletor) => document.querySelector(seletor);
+
+  // Mostra uma tela e esconde as outras; leva o foco ao título (acessibilidade)
+  function mostrar(id) {
+    document.querySelectorAll('main > .tela').forEach((t) => t.classList.toggle('ativa', t.id === id));
+    if (id === 'tela-home') renderHome();
+    const titulo = $('#' + id).querySelector('h1, h2');
+    if (titulo) { titulo.tabIndex = -1; titulo.focus(); }
+    window.scrollTo(0, 0);
+  }
+
+  // Botões com data-ir="id-da-tela" navegam direto
+  document.querySelectorAll('[data-ir]').forEach((b) => b.addEventListener('click', () => mostrar(b.dataset.ir)));
+
+  // Cria um botão com texto e ação (evita repetir código)
+  function criarBotao(texto, classe, acao) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = classe;
+    b.textContent = texto;
+    b.addEventListener('click', acao);
+    return b;
+  }
+
+  // ---------- Cadastro ----------
+  document.querySelectorAll('.avatar').forEach((b) => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.avatar').forEach((x) => x.setAttribute('aria-checked', 'false'));
+      b.setAttribute('aria-checked', 'true');
+      estado.avatar = b.textContent;
+    });
+  });
+
+  $('#form-cadastro').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nome = $('#nome').value.trim();
+    const idade = Number($('#idade').value);
+    const email = $('#email').value.trim();
+
+    let erro = '';
+    if (nome.length < 2) erro = 'Digite seu nome.';
+    else if (!(idade >= 14 && idade <= 90)) erro = 'Informe uma idade entre 14 e 90.';
+    else if (!/^\S+@\S+\.\S+$/.test(email)) erro = 'Digite um e-mail válido.';
+    else if (!estado.avatar) erro = 'Escolha um avatar.';
+
+    $('#erro-cadastro').textContent = erro;
+    if (erro) return;
+    estado.nome = nome;
+    estado.idade = idade;
+    // Depois do cadastro: questionário de perfil do público
+    estado.iPublico = 0;
+    estado.respostasPublico = {};
+    renderPublico();
+    mostrar('tela-publico');
+  });
+
+  // ---------- Questionário de perfil do público ----------
+  // Identifica "Início de carreira" ou "Transição de carreira".
+  // Regra: a idade soma 2 pontos na faixa esperada (até 29 = início, 30+ = transição)
+  // e as respostas somam pontos que podem mudar o resultado. Empate: vale a idade.
+  const PUBLICO = [
+    {
+      id: 'momento',
+      pergunta: 'Qual frase descreve melhor o seu momento?',
+      opcoes: [
+        { texto: 'Estou estudando (faculdade, curso técnico ou cursinho)', inicio: 2 },
+        { texto: 'Estou começando a carreira ou buscando o 1º emprego', inicio: 2 },
+        { texto: 'Trabalho em outra área e quero mudar para tech', transicao: 2 },
+        { texto: 'Estou buscando recolocação no mercado', transicao: 2 },
+        { texto: 'Já trabalho com tecnologia e quero ir para cloud' },
+      ],
+    },
+    {
+      id: 'escolaridade',
+      pergunta: 'Qual é a sua escolaridade?',
+      opcoes: [
+        { texto: 'Ensino médio em andamento', inicio: 1 },
+        { texto: 'Ensino médio completo' },
+        { texto: 'Curso técnico' },
+        { texto: 'Graduação em andamento', inicio: 1 },
+        { texto: 'Graduação completa' },
+        { texto: 'Pós-graduação' },
+      ],
+    },
+    {
+      id: 'tempo',
+      pergunta: 'Quanto tempo você tem para estudar por dia?',
+      opcoes: [
+        { texto: '5 minutinhos', meta: 5 },
+        { texto: 'Uns 10 minutos', meta: 10 },
+        { texto: '15 minutos ou mais', meta: 15 },
+        { texto: 'Só consigo nos fins de semana', meta: 15, fimDeSemana: true },
+      ],
+    },
+    {
+      id: 'objetivo',
+      pergunta: 'O que você mais quer agora?',
+      opcoes: [
+        { texto: 'Conseguir um estágio ou a primeira vaga', inicio: 1 },
+        { texto: 'Mudar de carreira com segurança', transicao: 1 },
+        { texto: 'Crescer na área em que já estou' },
+        { texto: 'Entender melhor o que é cloud' },
+      ],
+    },
+    {
+      id: 'experiencia',
+      pergunta: 'Onde está a maior parte da sua experiência?',
+      opcoes: [
+        { texto: 'Educação: dar aulas ou treinar pessoas', transicao: 1, competencia: 'Comunicação com stakeholders' },
+        { texto: 'Administrativo ou financeiro', transicao: 1, competencia: 'Processos e governança' },
+        { texto: 'Atendimento, suporte ou vendas', transicao: 1, competencia: 'Resolução de problemas com foco no cliente' },
+        { texto: 'Saúde ou outra área com protocolos rígidos', transicao: 1, competencia: 'Atenção a detalhes e protocolos' },
+        { texto: 'Ainda tenho pouca experiência profissional', inicio: 1 },
+      ],
+    },
+  ];
+
+  // Textos que mudam conforme o perfil
+  const TEXTOS_PERFIL = {
+    inicio: {
+      nome: 'Início de carreira',
+      descricao: 'Você está começando e tem muito para descobrir. Vamos apresentar cargos em cloud que talvez você ainda não conheça.',
+      oQueMuda: 'Seus exemplos vão falar do dia a dia de estágio e de vagas júnior.',
+      saudacao: (nome) => `${nome}, vamos descobrir cargos em cloud que você talvez ainda não conhece.`,
+    },
+    transicao: {
+      nome: 'Transição de carreira',
+      descricao: 'Você já tem bagagem profissional, e ela conta muito. Vamos mostrar como sua experiência se encaixa em cloud.',
+      oQueMuda: 'Seus exemplos vão ser diretos e conectar o que você já sabe fazer com as tarefas do novo cargo.',
+      saudacao: (nome) => `${nome}, sua experiência já conta muito. Vamos transformá-la em carreira em cloud.`,
+    },
+  };
+
+  function identificarPerfil(idade, escolhas) {
+    const porIdade = idade >= 30 ? 'transicao' : 'inicio';
+    const pontos = { inicio: 0, transicao: 0 };
+    pontos[porIdade] += 2;
+    const competencias = [];
+    escolhas.forEach((o) => {
+      pontos.inicio += o.inicio || 0;
+      pontos.transicao += o.transicao || 0;
+      if (o.competencia) competencias.push(o.competencia);
+    });
+    const perfil = pontos.transicao > pontos.inicio ? 'transicao'
+      : pontos.inicio > pontos.transicao ? 'inicio' : porIdade;
+    return { perfil, competencias };
+  }
+
+  // Cria um card com título e linhas de texto
+  function criarCard(titulo, linhas, classe = 'card') {
+    const card = document.createElement('div');
+    card.className = classe;
+    const h = document.createElement('h3');
+    h.textContent = titulo;
+    card.append(h);
+    linhas.forEach((t) => {
+      const p = document.createElement('p');
+      p.textContent = t;
+      card.append(p);
+    });
+    return card;
+  }
+
+  function renderPublico() {
+    const box = $('#publico-conteudo');
+    box.innerHTML = '';
+    const i = estado.iPublico;
+
+    // Uma pergunta por vez, com barra de progresso
+    if (i < PUBLICO.length) {
+      const q = PUBLICO[i];
+      const barra = document.createElement('div');
+      barra.className = 'barra';
+      barra.setAttribute('role', 'progressbar');
+      barra.setAttribute('aria-label', `Pergunta ${i + 1} de ${PUBLICO.length}`);
+      barra.setAttribute('aria-valuemin', '0');
+      barra.setAttribute('aria-valuemax', String(PUBLICO.length));
+      barra.setAttribute('aria-valuenow', String(i));
+      const preenchido = document.createElement('div');
+      preenchido.style.width = `${(i / PUBLICO.length) * 100}%`;
+      barra.append(preenchido);
+
+      const intro = document.createElement('p');
+      intro.className = 'suave';
+      intro.textContent = i === 0
+        ? 'Conte um pouco sobre você. Com isso, ajustamos os exemplos e o seu ritmo.'
+        : `Pergunta ${i + 1} de ${PUBLICO.length}`;
+
+      const titulo = document.createElement('h2');
+      titulo.className = 'pergunta';
+      titulo.textContent = q.pergunta;
+
+      box.append(barra, intro, titulo);
+      q.opcoes.forEach((o) => box.append(criarBotao(o.texto, 'opcao', () => responderPublico(q.id, o))));
+      if (i > 0) box.append(criarBotao('← Voltar', 'btn texto', () => { estado.iPublico--; renderPublico(); }));
+      titulo.tabIndex = -1;
+      titulo.focus();
+      return;
+    }
+
+    // Resultado: perfil identificado
+    const r = identificarPerfil(estado.idade, Object.values(estado.respostasPublico));
+    const textos = TEXTOS_PERFIL[r.perfil];
+    const tempo = estado.respostasPublico.tempo;
+    const escolaridade = estado.respostasPublico.escolaridade;
+    estado.perfilPublico = r.perfil;
+    estado.competencias = r.competencias;
+    // O tempo informado vira a meta (e os dias) sugeridos nos alertas
+    estado.alertas.meta = tempo.meta;
+    estado.alertas.dias = tempo.fimDeSemana ? [6, 0] : [1, 3, 5];
+
+    const titulo = document.createElement('h2');
+    titulo.innerHTML = '<span class="marca">seu</span> <span class="marca branca"><span class="script">p</span>erfil</span>';
+    const nome = document.createElement('p');
+    nome.className = 'titulo-revista';
+    nome.innerHTML = '<span class="faixa rosa media"></span>';
+    nome.querySelector('span').textContent = textos.nome;
+
+    box.append(titulo, nome, criarCard('Quem é você aqui', [textos.descricao]));
+    if (r.perfil === 'transicao' && r.competencias.length > 0) {
+      box.append(criarCard('Você já traz para cloud', r.competencias.map((c) => `✓ ${c}`), 'card rosado'));
+    }
+    box.append(
+      criarCard('Seu ritmo', [
+        `⏱️ ${tempo.texto}: meta de ${tempo.meta} min ${tempo.fimDeSemana ? 'aos sábados e domingos' : 'nos dias de estudo'}.`,
+        'Dá para mudar quando quiser nos alertas.',
+      ]),
+      criarCard('O que muda para você', [`📚 Escolaridade: ${escolaridade.texto}.`, textos.oQueMuda]),
+      criarBotao('Continuar', 'btn', () => {
+        $('#pergunta-saudacao').textContent = textos.saudacao(estado.nome);
+        mostrar('tela-pergunta');
+      }),
+      criarBotao('Refazer respostas', 'btn texto', () => { estado.iPublico = 0; renderPublico(); }),
+    );
+    titulo.tabIndex = -1;
+    titulo.focus();
+  }
+
+  function responderPublico(id, opcao) {
+    estado.respostasPublico[id] = opcao;
+    estado.iPublico++;
+    renderPublico();
+  }
+
+  // ---------- Escolha de trilha ----------
+  function escolherTrilha(trilha) {
+    estado.trilha = trilha;
+    estado.concluidas = 0;
+    // Na 1ª vez, configura a rotina de alertas antes de ir para a trilha
+    if (!estado.alertasConfigurados) abrirLembretes(true);
+    else mostrar('tela-home');
+  }
+  document.querySelectorAll('[data-trilha]').forEach((b) => b.addEventListener('click', () => escolherTrilha(b.dataset.trilha)));
+
+  // ---------- Perguntas de perfil ("Não") ----------
+  $('#btn-nao').addEventListener('click', () => {
+    estado.pontos = { architect: 0, security: 0 };
+    estado.iPerfil = 0;
+    renderPerfil();
+    mostrar('tela-perfil');
+  });
+
+  function renderPerfil() {
+    const box = $('#perfil-conteudo');
+    box.innerHTML = '';
+
+    if (estado.iPerfil < PERFIL.length) {
+      const q = PERFIL[estado.iPerfil];
+      const contador = document.createElement('p');
+      contador.className = 'suave';
+      contador.textContent = `Pergunta ${estado.iPerfil + 1} de ${PERFIL.length}`;
+      const titulo = document.createElement('h2');
+      titulo.className = 'pergunta';
+      titulo.textContent = q.pergunta;
+      box.append(
+        contador,
+        titulo,
+        criarBotao(q.a, 'opcao', () => responderPerfil('architect')),
+        criarBotao(q.s, 'opcao', () => responderPerfil('security')),
+      );
+      return;
+    }
+
+    // Fim: recomenda a trilha com mais pontos (3 perguntas = nunca empata)
+    const recomendada = estado.pontos.security > estado.pontos.architect ? 'security' : 'architect';
+    const outra = recomendada === 'architect' ? 'security' : 'architect';
+    const titulo = document.createElement('h2');
+    const marca = document.createElement('span');
+    marca.className = 'marca';
+    marca.textContent = 'Sua trilha recomendada';
+    titulo.append(marca);
+    const card = document.createElement('div');
+    card.className = 'card';
+    const nome = document.createElement('h3');
+    nome.textContent = TRILHAS[recomendada].nome;
+    const pontos = document.createElement('p');
+    pontos.className = 'suave';
+    pontos.textContent = `Você marcou ${estado.pontos[recomendada]} de ${PERFIL.length} respostas com o perfil dessa carreira.`;
+    card.append(nome, pontos);
+    // Perfil transição: lembra as competências que ela já traz
+    if (estado.perfilPublico === 'transicao' && estado.competencias.length > 0) {
+      const traz = document.createElement('p');
+      traz.textContent = `Você já traz: ${estado.competencias.join(', ')}.`;
+      card.append(traz);
+    }
+    box.append(
+      titulo,
+      card,
+      criarBotao('Começar esta trilha', 'btn', () => escolherTrilha(recomendada)),
+      criarBotao('Prefiro a outra', 'btn secundario', () => escolherTrilha(outra)),
+    );
+    titulo.tabIndex = -1;
+    titulo.focus();
+  }
+
+  function responderPerfil(eixo) {
+    estado.pontos[eixo]++;
+    estado.iPerfil++;
+    renderPerfil();
+  }
+
+  // ---------- Home ----------
+  function renderHome() {
+    const trilha = TRILHAS[estado.trilha];
+    $('#home-ola').textContent = `${estado.avatar} Oi, ${estado.nome}!`;
+    $('#home-trilha').textContent = trilha.nome;
+    $('#home-xp').textContent = `⭐ ${estado.xp} XP`;
+    $('#home-barra').setAttribute('aria-valuenow', estado.concluidas);
+    $('#home-barra > div').style.width = `${(estado.concluidas / 5) * 100}%`;
+    $('#home-progresso').textContent = `${estado.concluidas} de 5 pílulas concluídas`;
+    $('#home-aviso').hidden = true;
+
+    // Ofensiva: aviso de perda (antes de estudar) ou parabéns (depois)
+    $('#home-streak').textContent = `🔥 ${estado.streak} dias`;
+    $('#home-streak').setAttribute('aria-label', `Ofensiva de ${estado.streak} dias`);
+    const ofensiva = $('#home-ofensiva');
+    ofensiva.className = estado.estudouHoje ? 'aviso ok' : 'aviso perigo';
+    ofensiva.textContent = estado.estudouHoje
+      ? `✅ Meta de hoje cumprida! Ofensiva de ${estado.streak} dias.`
+      : `🔥 Sua ofensiva de ${estado.streak} dias termina hoje! Faça 1 pílula para manter.`;
+
+    // Resumo dos alertas
+    const a = estado.alertas;
+    const ligados = estado.alertasConfigurados && a.ativo;
+    $('#home-alerta-status').textContent = !estado.alertasConfigurados ? 'Não configurados' : a.ativo ? 'Ligados' : 'Desligados';
+    $('#home-alerta-texto').textContent = !estado.alertasConfigurados
+      ? 'Escolha dias e horário para lembrarmos você das pílulas.'
+      : a.ativo ? `${diasCurtos(a.dias)} · ${a.hora}. ${textoProximo(a)}` : textoProximo(a);
+    $('#btn-home-alertas').textContent = estado.alertasConfigurados ? 'Editar alertas' : 'Configurar alertas';
+    $('#btn-sino').classList.toggle('ativo', ligados);
+
+    // Caminho vertical: concluída ✓, liberada (número) ou bloqueada 🔒
+    const caminho = $('#caminho');
+    caminho.innerHTML = '';
+    trilha.pilulas.forEach((titulo, i) => {
+      let classe = 'pilula';
+      let simbolo = String(i + 1);
+      let situacao = 'liberada';
+      if (i < estado.concluidas) { classe += ' feita'; simbolo = '✓'; situacao = 'concluída'; }
+      else if (i > estado.concluidas) { classe += ' bloqueada'; simbolo = '🔒'; situacao = 'bloqueada'; }
+
+      const b = criarBotao(simbolo, classe, () => clicarPilula(i));
+      b.setAttribute('aria-label', `Pílula ${i + 1}: ${titulo}, ${situacao}`);
+      caminho.append(b);
+    });
+  }
+
+  function clicarPilula(i) {
+    const aviso = $('#home-aviso');
+    if (i === 0) return abrirPilula();
+    aviso.textContent = i > estado.concluidas
+      ? '🔒 Conclua a pílula anterior para liberar esta.'
+      : 'Esta pílula chega na próxima versão do protótipo. 💜';
+    aviso.hidden = false;
+  }
+
+  // ---------- Alertas das pílulas ----------
+  function copiarAlertas(a) {
+    return { ...a, dias: [...a.dias] };
+  }
+
+  function diasCurtos(dias) {
+    return DIAS.filter((d) => dias.includes(d.n)).map((d) => d.curto).join(', ');
+  }
+
+  // Próximo alerta a partir de agora. Hoje só conta se o horário não passou
+  // e ela ainda não estudou (se já estudou, o alerta de hoje é cancelado).
+  function proximoAlerta(cfg) {
+    const [h, m] = cfg.hora.split(':').map(Number);
+    const agora = new Date();
+    for (let d = 0; d <= 7; d++) {
+      const data = new Date(agora);
+      data.setDate(agora.getDate() + d);
+      data.setHours(h, m, 0, 0);
+      if (!cfg.dias.includes(data.getDay())) continue;
+      if (d === 0 && (data <= agora || estado.estudouHoje)) continue;
+      const nome = NOMES_DIA[data.getDay()];
+      return d === 0 ? 'hoje' : d === 1 ? 'amanhã' : d === 7 ? `próxima ${nome}` : nome;
+    }
+    return null;
+  }
+
+  function alertaDeHojeCancelado(cfg) {
+    return cfg.ativo && estado.estudouHoje && cfg.dias.includes(new Date().getDay());
+  }
+
+  function textoProximo(cfg) {
+    if (!cfg.ativo) return '🔕 Alertas desligados. Você não vai receber lembretes.';
+    if (cfg.dias.length === 0) return 'Escolha pelo menos 1 dia para receber alertas.';
+    const cancelado = alertaDeHojeCancelado(cfg) ? '🔕 Hoje: cancelado, você já estudou. ' : '';
+    return `${cancelado}🔔 Próximo alerta: ${proximoAlerta(cfg)}, ${cfg.hora}.`;
+  }
+
+  function mensagemAlerta(i, meta) {
+    return MENSAGENS[i % MENSAGENS.length].replace('{n}', estado.streak).replace('{meta}', meta);
+  }
+
+  // Preenche uma notificação (prévia ou banner) com o texto e a próxima pílula
+  function preencherNotificacao(el, i, cfg) {
+    const trilha = TRILHAS[estado.trilha];
+    const proxima = Math.min(estado.concluidas, trilha.pilulas.length - 1);
+    el.querySelector('.notif-titulo').textContent = mensagemAlerta(i, cfg.meta);
+    el.querySelector('.notif-texto').textContent = `Pílula ${proxima + 1}: ${trilha.pilulas[proxima]} · ${cfg.meta} min`;
+  }
+
+  function abrirLembretes(onboarding) {
+    estado.lembretesOnboarding = onboarding;
+    estado.rascunho = copiarAlertas(estado.alertas);
+    $('#hora-alerta').value = estado.rascunho.hora;
+    $('#btn-salvar-lembretes').textContent = onboarding ? 'Salvar e ir para a trilha' : 'Salvar alertas';
+    $('#btn-lembretes-sair').textContent = onboarding ? 'Agora não' : 'Voltar sem salvar';
+    $('#erro-lembretes').textContent = '';
+    renderLembretes();
+    mostrar('tela-lembretes');
+  }
+
+  // Atualiza a tela de alertas a partir do rascunho
+  function renderLembretes() {
+    const r = estado.rascunho;
+    $('#sw-alertas').setAttribute('aria-checked', String(r.ativo));
+    $('#alertas-campos').disabled = !r.ativo;
+    document.querySelectorAll('#dias .dia').forEach((b) =>
+      b.setAttribute('aria-pressed', String(r.dias.includes(Number(b.dataset.dia)))));
+    document.querySelectorAll('#metas .meta').forEach((b) =>
+      b.setAttribute('aria-checked', String(r.meta === Number(b.dataset.meta))));
+    $('#notif-previa .notif-app').textContent = `CloudSister · ${r.hora}`;
+    preencherNotificacao($('#notif-previa'), estado.iMensagem, r);
+    $('#proximo-alerta').textContent = textoProximo(r);
+  }
+
+  // Botões dos dias e das metas são criados uma vez
+  DIAS.forEach((d) => {
+    const b = criarBotao(d.curto, 'dia', () => {
+      const r = estado.rascunho;
+      r.dias = r.dias.includes(d.n) ? r.dias.filter((x) => x !== d.n) : [...r.dias, d.n];
+      renderLembretes();
+    });
+    b.dataset.dia = d.n;
+    b.setAttribute('aria-label', d.nome);
+    $('#dias').append(b);
+  });
+  METAS.forEach((m) => {
+    const b = criarBotao(`${m} min`, 'meta', () => {
+      estado.rascunho.meta = m;
+      renderLembretes();
+    });
+    b.dataset.meta = m;
+    b.setAttribute('role', 'radio');
+    $('#metas').append(b);
+  });
+
+  $('#sw-alertas').addEventListener('click', () => {
+    estado.rascunho.ativo = !estado.rascunho.ativo;
+    renderLembretes();
+  });
+
+  $('#hora-alerta').addEventListener('input', (e) => {
+    if (!e.target.value) return; // campo vazio: mantém o último horário válido
+    estado.rascunho.hora = e.target.value;
+    renderLembretes();
+  });
+
+  // Testar: mostra o banner simulado com o próximo texto da lista
+  let timerToast;
+  $('#btn-testar-alerta').addEventListener('click', () => {
+    estado.iMensagem++;
+    const toast = $('#toast');
+    preencherNotificacao($('#notif-previa'), estado.iMensagem, estado.rascunho);
+    toast.classList.add('mostrar');
+    // Preenche depois de aparecer, para o leitor de tela anunciar
+    requestAnimationFrame(() => preencherNotificacao(toast, estado.iMensagem, estado.rascunho));
+    clearTimeout(timerToast);
+    timerToast = setTimeout(() => toast.classList.remove('mostrar'), 4500);
+  });
+  $('#toast-fechar').addEventListener('click', () => $('#toast').classList.remove('mostrar'));
+
+  $('#btn-salvar-lembretes').addEventListener('click', () => {
+    const r = estado.rascunho;
+    if (r.ativo && r.dias.length === 0) {
+      $('#erro-lembretes').textContent = 'Escolha pelo menos 1 dia ou desligue os alertas.';
+      return;
+    }
+    estado.alertas = copiarAlertas(r);
+    estado.alertasConfigurados = true;
+    mostrar('tela-home');
+  });
+  $('#btn-lembretes-sair').addEventListener('click', () => mostrar('tela-home'));
+
+  // Atalhos para a tela de alertas
+  $('#btn-sino').addEventListener('click', () => abrirLembretes(false));
+  $('#btn-home-alertas').addEventListener('click', () => abrirLembretes(false));
+  $('#btn-res-alertas').addEventListener('click', () => abrirLembretes(false));
+
+  // ---------- Pílula ----------
+  function abrirPilula() {
+    estado.iQuestao = 0;
+    estado.xpPilula = 0;
+    estado.acertos = 0;
+    $('#flash').classList.remove('virado');
+    $('#etapa-estudo').classList.add('ativa');
+    $('#etapa-questoes').classList.remove('ativa');
+    mostrar('tela-pilula');
+  }
+
+  // Flashcard: vira ao clicar e avisa o leitor de tela qual face está visível
+  $('#flash').addEventListener('click', () => {
+    const virado = $('#flash').classList.toggle('virado');
+    $('.frente').setAttribute('aria-hidden', virado);
+    $('.verso').setAttribute('aria-hidden', !virado);
+  });
+
+  $('#btn-ir-questoes').addEventListener('click', () => {
+    $('#etapa-estudo').classList.remove('ativa');
+    $('#etapa-questoes').classList.add('ativa');
+    renderQuestao();
+  });
+
+  function renderQuestao() {
+    const q = QUESTOES[estado.iQuestao];
+    $('#q-barra').setAttribute('aria-valuenow', estado.iQuestao);
+    $('#q-barra > div').style.width = `${(estado.iQuestao / QUESTOES.length) * 100}%`;
+    $('#q-contador').textContent = `Questão ${estado.iQuestao + 1} de ${QUESTOES.length}`;
+    $('#q-cenario').textContent = '📍 ' + q.cenario;
+    $('#q-pergunta').textContent = q.pergunta;
+    $('#q-feedback').hidden = true;
+    $('#btn-continuar').hidden = true;
+
+    const opcoes = $('#q-opcoes');
+    opcoes.innerHTML = '';
+    q.opcoes.forEach((texto, i) => opcoes.append(criarBotao(texto, 'opcao', () => responder(i))));
+    $('#q-pergunta').tabIndex = -1;
+    $('#q-pergunta').focus();
+  }
+
+  function responder(escolhida) {
+    const q = QUESTOES[estado.iQuestao];
+    const botoes = [...$('#q-opcoes').children];
+    const feedback = $('#q-feedback');
+
+    botoes.forEach((b) => (b.disabled = true));
+    botoes[q.correta].classList.add('certa');
+
+    if (escolhida === q.correta) {
+      estado.xpPilula += 10;
+      estado.acertos++;
+      feedback.className = 'feedback ok';
+      feedback.textContent = 'Isso aí! +10 XP 💜';
+    } else {
+      // Erro: mostra a resposta certa e o porquê
+      botoes[escolhida].classList.add('errada');
+      feedback.className = 'feedback erro';
+      feedback.textContent = `Quase! A resposta certa é: "${q.opcoes[q.correta]}". ${q.explicacao}`;
+    }
+
+    feedback.hidden = false;
+    const ultima = estado.iQuestao === QUESTOES.length - 1;
+    $('#btn-continuar').textContent = ultima ? 'Ver resultado' : 'Continuar';
+    $('#btn-continuar').hidden = false;
+    $('#btn-continuar').focus();
+  }
+
+  $('#btn-continuar').addEventListener('click', () => {
+    if (estado.iQuestao < QUESTOES.length - 1) {
+      estado.iQuestao++;
+      renderQuestao();
+    } else {
+      concluirPilula();
+    }
+  });
+
+  // ---------- Resultado ----------
+  function concluirPilula() {
+    estado.xp += estado.xpPilula;
+    estado.concluidas = Math.max(estado.concluidas, 1);
+    // 1ª pílula do dia: ofensiva sobe e o alerta de hoje é cancelado
+    if (!estado.estudouHoje) {
+      estado.estudouHoje = true;
+      estado.streak++;
+    }
+    $('#res-titulo').textContent = `Pílula concluída! +${estado.xpPilula} XP 🎉`;
+    $('#res-detalhe').textContent = `Você acertou ${estado.acertos} de ${QUESTOES.length} questões. Ofensiva: ${estado.streak} dias 🔥`;
+    const a = estado.alertas;
+    $('#res-alerta').textContent = estado.alertasConfigurados && a.ativo
+      ? textoProximo(a)
+      : '🔔 Ative os alertas para não perder sua ofensiva.';
+    mostrar('tela-resultado');
+  }
+</script>
+</body>
+</html>

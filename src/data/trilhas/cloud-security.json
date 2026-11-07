@@ -1,0 +1,218 @@
+{
+  "id": "cloud-security",
+  "titulo": "Cloud Security Engineer",
+  "fontes": [
+    "Shared responsibility model",
+    "What are the best practices to secure my AWS account and its resources?",
+    "Data protection in AWS Key Management Service",
+    "Logging Amazon GuardDuty API calls with AWS CloudTrail"
+  ],
+  "pilulas": [
+    {
+      "id": "cs-01",
+      "ordem": 1,
+      "titulo": "Responsabilidade compartilhada e tríade CIA",
+      "nivel": "basico",
+      "duracaoMin": 6,
+      "conceito": {
+        "texto": "Na cloud, a segurança é dividida. A AWS cuida da segurança DA nuvem: prédios, hardware, rede e a camada de virtualização. O cliente cuida da segurança NA nuvem: seus dados, quem tem acesso, as atualizações do sistema operacional das suas instâncias e as regras de firewall. Toda decisão de segurança protege a tríade CIA: Confidencialidade (só quem pode vê), Integridade (ninguém altera sem permissão) e Disponibilidade (está no ar quando precisa).",
+        "exemplo": "Numa clínica, a AWS protege o data center, mas é a equipe da clínica que decide quem pode abrir os prontuários."
+      },
+      "flashcards": [
+        { "frente": "O que é o modelo de responsabilidade compartilhada?", "verso": "A AWS protege a infraestrutura da nuvem; o cliente protege o que coloca nela: dados, acessos, sistema operacional e configurações." },
+        { "frente": "O que é Confidencialidade?", "verso": "Garantir que só pessoas autorizadas consigam ver uma informação." },
+        { "frente": "O que é Disponibilidade?", "verso": "Garantir que o sistema e os dados estejam acessíveis quando forem necessários." }
+      ],
+      "questoes": [
+        {
+          "id": "cs-01-q1",
+          "tipo": "multipla_escolha",
+          "categoria": "tecnica",
+          "cenario": "Uma cliente pergunta quem garante que ninguém entre fisicamente no data center.",
+          "pergunta": "De quem é essa responsabilidade?",
+          "opcoes": ["Da AWS", "Da cliente", "Das duas, meio a meio", "De ninguém"],
+          "correta": 0,
+          "explicacao": "A segurança física das instalações faz parte da segurança DA nuvem, que é responsabilidade da AWS.",
+          "referenciaConceito": "A AWS cuida da segurança DA nuvem: prédios, hardware, rede e a camada de virtualização."
+        },
+        {
+          "id": "cs-01-q2",
+          "tipo": "multipla_escolha",
+          "categoria": "tecnica",
+          "cenario": "Uma auditoria encontra um servidor EC2 da empresa com o sistema operacional desatualizado.",
+          "pergunta": "Quem deveria ter aplicado as atualizações?",
+          "opcoes": ["A empresa cliente", "A AWS", "O fabricante do processador", "Ninguém, o EC2 se atualiza sozinho"],
+          "correta": 0,
+          "explicacao": "O sistema operacional da instância (o \"convidado\") e suas atualizações ficam do lado do cliente. A AWS cuida da camada abaixo dele.",
+          "referenciaConceito": "O cliente cuida da segurança NA nuvem: [...] as atualizações do sistema operacional das suas instâncias."
+        },
+        {
+          "id": "cs-01-q3",
+          "tipo": "multipla_escolha",
+          "categoria": "negocio",
+          "cenario": "Um site de vendas fica fora do ar por horas depois de um ataque, e os clientes não conseguem comprar.",
+          "pergunta": "Qual item da tríade CIA foi mais afetado?",
+          "opcoes": ["Disponibilidade", "Confidencialidade", "Integridade"],
+          "correta": 0,
+          "explicacao": "Os dados não vazaram nem foram alterados: o problema é que o site não estava acessível, ou seja, disponibilidade.",
+          "referenciaConceito": "Disponibilidade (está no ar quando precisa)."
+        },
+        {
+          "id": "cs-01-q4",
+          "tipo": "verdadeiro_falso",
+          "categoria": "negocio",
+          "cenario": "Na reunião, um gestor diz: \"agora que estamos na AWS, segurança não é mais problema nosso\".",
+          "pergunta": "Ao usar a AWS, toda a segurança passa a ser responsabilidade da AWS.",
+          "opcoes": ["Verdadeiro", "Falso"],
+          "correta": 1,
+          "explicacao": "A responsabilidade é compartilhada. Dados, acessos e configurações continuam sendo da empresa.",
+          "referenciaConceito": "Na cloud, a segurança é dividida."
+        }
+      ]
+    },
+    {
+      "id": "cs-02",
+      "ordem": 2,
+      "titulo": "Identidade, acesso e criptografia",
+      "nivel": "intermediario",
+      "duracaoMin": 8,
+      "conceito": {
+        "texto": "O AWS IAM controla quem pode fazer o quê na conta. A regra de ouro é o menor privilégio: cada pessoa ou sistema recebe só as permissões necessárias para a sua tarefa. Ative MFA (um segundo fator, como um app no celular) para que uma senha roubada não baste. Para proteger dados, use criptografia em repouso (dados guardados), com chaves do AWS KMS, e em trânsito (dados viajando pela rede), com TLS.",
+        "exemplo": "A estagiária de marketing só precisa ler relatórios num bucket S3: ela recebe permissão de leitura nesse bucket, e nada mais."
+      },
+      "flashcards": [
+        { "frente": "O que é menor privilégio?", "verso": "Dar a cada usuária ou sistema apenas as permissões necessárias para sua tarefa, e nada além disso." },
+        { "frente": "O que é MFA?", "verso": "Autenticação multifator: além da senha, pede um segundo fator, como um código no celular." },
+        { "frente": "Criptografia em repouso x em trânsito?", "verso": "Em repouso protege dados guardados (disco, banco). Em trânsito protege dados viajando pela rede (TLS)." }
+      ],
+      "questoes": [
+        {
+          "id": "cs-02-q1",
+          "tipo": "multipla_escolha",
+          "categoria": "tecnica",
+          "cenario": "Uma analista nova precisa apenas consultar relatórios guardados em um bucket S3.",
+          "pergunta": "Que acesso você concede?",
+          "opcoes": [
+            "Somente leitura nesse bucket",
+            "Administradora da conta, para não travar o trabalho",
+            "A senha do usuário root, compartilhada com o time",
+            "Leitura e escrita em todos os buckets"
+          ],
+          "correta": 0,
+          "explicacao": "Menor privilégio: só o necessário para a tarefa. Acesso amplo aumenta o estrago se a conta dela for comprometida.",
+          "referenciaConceito": "Cada pessoa ou sistema recebe só as permissões necessárias para a sua tarefa."
+        },
+        {
+          "id": "cs-02-q2",
+          "tipo": "multipla_escolha",
+          "categoria": "tecnica",
+          "cenario": "A senha de uma usuária vazou num e-mail de phishing, mas o invasor não conseguiu entrar.",
+          "pergunta": "O que provavelmente impediu o acesso?",
+          "opcoes": ["MFA ativado", "Uma senha bem longa", "O antivírus do notebook", "A Região escolhida"],
+          "correta": 0,
+          "explicacao": "Com MFA, a senha sozinha não basta: o invasor precisaria também do segundo fator. Uma senha longa não ajuda depois que ela vazou.",
+          "referenciaConceito": "Ative MFA [...] para que uma senha roubada não baste."
+        },
+        {
+          "id": "cs-02-q3",
+          "tipo": "multipla_escolha",
+          "categoria": "negocio",
+          "cenario": "Uma fintech precisa mostrar à auditoria que os dados dos clientes no banco ficam protegidos mesmo se alguém copiar o disco.",
+          "pergunta": "Qual controle atende esse pedido?",
+          "opcoes": [
+            "Criptografia em repouso com chaves do AWS KMS",
+            "Criptografia em trânsito com TLS",
+            "MFA para todos os usuários",
+            "Trocar a senha do banco todo mês"
+          ],
+          "correta": 0,
+          "explicacao": "Dado copiado do disco é dado guardado: a proteção é criptografia em repouso. TLS protege dados viajando pela rede, não os armazenados.",
+          "referenciaConceito": "Criptografia em repouso (dados guardados), com chaves do AWS KMS."
+        },
+        {
+          "id": "cs-02-q4",
+          "tipo": "verdadeiro_falso",
+          "categoria": "tecnica",
+          "cenario": "Você revisa como os sistemas da empresa conversam com o AWS KMS.",
+          "pergunta": "As chamadas à API do AWS KMS precisam usar TLS, ou seja, criptografia em trânsito.",
+          "opcoes": ["Verdadeiro", "Falso"],
+          "correta": 0,
+          "explicacao": "A documentação do KMS exige que todas as chamadas à API sejam assinadas e transmitidas com TLS.",
+          "referenciaConceito": "[...] e em trânsito (dados viajando pela rede), com TLS."
+        }
+      ]
+    },
+    {
+      "id": "cs-03",
+      "ordem": 3,
+      "titulo": "Desafio: monitoramento e resposta a incidente",
+      "nivel": "avancado",
+      "duracaoMin": 10,
+      "conceito": {
+        "texto": "Você não protege o que não enxerga. O AWS CloudTrail registra as ações feitas na conta: quem fez, o quê, quando e de qual endereço IP. O Amazon GuardDuty analisa sinais como esses e alerta sobre comportamento suspeito. Na resposta a um incidente, a ordem é: detectar, conter (por exemplo, desativar a credencial comprometida), investigar nos logs, corrigir a causa e registrar o aprendizado.",
+        "exemplo": "Cenário do desafio: às 3h da manhã, o GuardDuty alerta que a chave de acesso de um desenvolvedor está criando servidores numa Região que a empresa nunca usa."
+      },
+      "flashcards": [
+        { "frente": "O que o AWS CloudTrail registra?", "verso": "As ações feitas na conta: quem fez, o que fez, quando e de qual endereço IP." },
+        { "frente": "O que faz o Amazon GuardDuty?", "verso": "Detecta ameaças: analisa sinais da conta e alerta sobre comportamento suspeito." },
+        { "frente": "O que é \"conter\" um incidente?", "verso": "Parar o estrago o quanto antes, por exemplo desativando uma credencial comprometida, antes de investigar a fundo." }
+      ],
+      "questoes": [
+        {
+          "id": "cs-03-q1",
+          "tipo": "multipla_escolha",
+          "categoria": "tecnica",
+          "cenario": "Você confirma que o alerta do GuardDuty é real: a chave do desenvolvedor está sendo usada por outra pessoa.",
+          "pergunta": "Qual a primeira ação?",
+          "opcoes": [
+            "Desativar a chave de acesso comprometida",
+            "Apagar os logs para não assustar ninguém",
+            "Esperar o horário comercial para avisar o time",
+            "Excluir a conta AWS inteira"
+          ],
+          "correta": 0,
+          "explicacao": "Primeiro contenha: desativar a chave corta o acesso do invasor. Apagar logs destrói evidências; esperar deixa o estrago crescer.",
+          "referenciaConceito": "Conter (por exemplo, desativar a credencial comprometida)."
+        },
+        {
+          "id": "cs-03-q2",
+          "tipo": "multipla_escolha",
+          "categoria": "tecnica",
+          "cenario": "Com a chave desativada, você precisa saber o que ela fez nas últimas horas.",
+          "pergunta": "Onde você investiga quais ações foram feitas e de qual IP?",
+          "opcoes": ["Nos eventos do AWS CloudTrail", "Na fatura do mês", "No e-mail do desenvolvedor", "No painel do Amazon S3"],
+          "correta": 0,
+          "explicacao": "O CloudTrail guarda o registro de cada ação na conta, com autor, horário e IP. A fatura só mostra custos, sem detalhes de quem fez o quê.",
+          "referenciaConceito": "O AWS CloudTrail registra as ações feitas na conta: quem fez, o quê, quando e de qual endereço IP."
+        },
+        {
+          "id": "cs-03-q3",
+          "tipo": "multipla_escolha",
+          "categoria": "negocio",
+          "cenario": "O gerente precisa decidir se avisa os clientes e pede um resumo do incidente.",
+          "pergunta": "O que você entrega?",
+          "opcoes": [
+            "Linha do tempo baseada nos logs: o que foi acessado, impacto e ações tomadas",
+            "\"Está tudo bem\", para não alarmar ninguém",
+            "Uma lista técnica de todos os eventos, sem explicação",
+            "Nada até descobrir quem foi o invasor"
+          ],
+          "correta": 0,
+          "explicacao": "Quem decide precisa de fatos claros: o que aconteceu, o impacto e o que já foi feito. Esconder ou despejar dados técnicos atrapalha a decisão.",
+          "referenciaConceito": "Investigar nos logs, corrigir a causa e registrar o aprendizado."
+        },
+        {
+          "id": "cs-03-q4",
+          "tipo": "verdadeiro_falso",
+          "categoria": "tecnica",
+          "cenario": "A empresa nunca configurou uma trilha (trail) no CloudTrail.",
+          "pergunta": "Mesmo sem trail configurado, dá para ver os eventos mais recentes no histórico de eventos do CloudTrail.",
+          "opcoes": ["Verdadeiro", "Falso"],
+          "correta": 0,
+          "explicacao": "O console do CloudTrail mostra os eventos recentes em \"Event history\" mesmo sem trail. Para guardar por mais tempo, configure um trail entregando os eventos no S3.",
+          "referenciaConceito": "O AWS CloudTrail registra as ações feitas na conta."
+        }
+      ]
+    }
+  ]
+}

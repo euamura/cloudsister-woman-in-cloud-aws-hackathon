@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CloudSister – protótipo</title>
+  <style>
+    /* ---------- Cores e base ---------- */
+    :root {
+      --lilas: #A78BFA;
+      --roxo: #6D28D9;
+      --roxo-escuro: #4C1D95;
+      --rosa: #F472B6;
+      --rosa-claro: #FCE7F3;
+      --fundo: #FAF5FF;
+      --verde: #22C55E;
+      --verde-escuro: #15803D;
+      --vermelho: #F43F5E;
+      --vermelho-escuro: #BE123C;
+      --borda: #E9D5FF;
+      --texto: #1F1235;
+      --suave: #5B4B7A;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: "Nunito", "Varela Round", ui-rounded, "Segoe UI", system-ui, sans-serif;
+      background: #EDE4FB;
+      color: var(--texto);
+      display: flex;
+      justify-content: center;
+    }
+    /* Moldura mobile: máx. 400px, centralizada */
+    .app {
+      width: 100%;
+      max-width: 400px;
+      min-height: 100vh;
+      background: var(--fundo);
+      padding: 24px 20px 40px;
+    }
+    .tela { display: none; flex-direction: column; gap: 16px; }
+    .tela.ativa { display: flex; }
+
+    h1 { font-size: 2.2rem; font-weight: 800; color: var(--roxo); text-align: center; }
+    h2 { font-size: 1.5rem; font-weight: 800; line-height: 1.25; }
+    h3 { font-size: 1.1rem; font-weight: 800; }
+    h1:focus, h2:focus { outline: none; }
+    p { line-height: 1.5; }
+    .suave { color: var(--suave); }
+    .centro { text-align: center; }
+
+    /* ---------- Botão estilo Duolingo (sombra embaixo) ---------- */
+    .btn {
+      font: inherit;
+      font-weight: 800;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      width: 100%;
+      min-height: 52px;
+      padding: 12px 20px;
+      border: 2px solid var(--roxo);
+      border-radius: 16px;
+      background: var(--roxo);
+      color: #fff;
+      box-shadow: 0 4px 0 var(--roxo-escuro);
+      cursor: pointer;
+    }
+    .btn:active { transform: translateY(4px); box-shadow: none; }
+    .btn.secundario {
+      background: #fff;
+      color: var(--roxo);
+      border-color: var(--borda);
+      box-shadow: 0 4px 0 var(--borda);
+    }
+    .btn.texto { background: none; border: none; box-shadow: none; color: var(--roxo); width: auto; }
+    button:focus-visible, input:focus-visible { outline: 3px solid var(--rosa); outline-offset: 2px; }
+
+    .card {
+      background: #fff;
+      border: 2px solid var(--borda);
+      border-radius: 24px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ---------- Boas-vindas ---------- */
+    .logo { font-size: 5rem; text-align: center; margin-top: 60px; animation: flutua 2.4s ease-in-out infinite; }
+    @keyframes flutua { 50% { transform: translateY(-8px); } }
+
+    /* ---------- Formulário ---------- */
+    label { font-weight: 700; font-size: .9rem; color: var(--suave); display: flex; flex-direction: column; gap: 6px; }
+    input {
+      font: inherit;
+      font-size: 1rem;
+      min-height: 52px;
+      padding: 0 16px;
+      border: 2px solid var(--borda);
+      border-radius: 16px;
+      background: #fff;
+      color: var(--texto);
+    }
+    input:focus { border-color: var(--roxo); }
+    .avatares { display: flex; gap: 12px; flex-wrap: wrap; }
+    .avatar {
+      font-size: 2rem;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      background: var(--rosa-claro);
+      cursor: pointer;
+    }
+    .avatar[aria-checked="true"] { border-color: var(--roxo); background: var(--borda); }
+    .msg-erro { color: var(--vermelho-escuro); font-weight: 700; min-height: 1.4em; }
+
+    /* ---------- Home ---------- */
+    .topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .chip { background: #fff; border: 2px solid var(--borda); border-radius: 999px; padding: 6px 12px; font-weight: 800; }
+    .barra { height: 14px; background: var(--borda); border-radius: 999px; overflow: hidden; }
+    .barra > div { height: 100%; width: 0; background: var(--verde); border-radius: 999px; transition: width .4s; }
+    .caminho { display: flex; flex-direction: column; align-items: center; gap: 22px; padding: 8px 0 16px; }
+    .pilula {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      border: none;
+      font: inherit;
+      font-size: 1.7rem;
+      font-weight: 800;
+      background: var(--roxo);
+      color: #fff;
+      box-shadow: 0 6px 0 var(--roxo-escuro);
+      cursor: pointer;
+    }
+    /* Zigue-zague do caminho */
+    .pilula:nth-child(4n+2) { margin-left: 110px; }
+    .pilula:nth-child(4n) { margin-right: 110px; }
+    .pilula:active { transform: translateY(6px); box-shadow: none; }
+    .pilula.bloqueada { background: #E5E7EB; color: #4B5563; box-shadow: 0 6px 0 #D1D5DB; cursor: not-allowed; }
+    .pilula.feita { background: var(--verde); color: #052E16; box-shadow: 0 6px 0 var(--verde-escuro); }
+    .aviso { background: var(--rosa-claro); border-radius: 16px; padding: 12px; font-weight: 700; }
+
+    /* ---------- Flashcard que vira ---------- */
+    .flash { perspective: 800px; height: 170px; width: 100%; border: none; background: none; padding: 0; cursor: pointer; font: inherit; }
+    .flash-miolo { position: relative; width: 100%; height: 100%; transition: transform .5s; transform-style: preserve-3d; }
+    .flash.virado .flash-miolo { transform: rotateY(180deg); }
+    .face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+    .face small { font-size: .8rem; font-weight: 700; opacity: .85; }
+    .frente { background: var(--lilas); color: var(--texto); }
+    .verso { background: var(--roxo); color: #fff; font-weight: 600; transform: rotateY(180deg); }
+
+    /* ---------- Questões ---------- */
+    .opcao {
+      font: inherit;
+      font-weight: 700;
+      text-align: left;
+      width: 100%;
+      min-height: 52px;
+      padding: 12px 16px;
+      border: 2px solid var(--borda);
+      border-bottom-width: 5px;
+      border-radius: 16px;
+      background: #fff;
+      color: var(--texto);
+      cursor: pointer;
+    }
+    .opcao:disabled { cursor: default; }
+    .opcao.certa { background: var(--verde); border-color: var(--verde-escuro); color: #052E16; }
+    .opcao.errada { background: #FFE4E6; border-color: var(--vermelho); color: var(--vermelho-escuro); }
+    .opcoes { display: flex; flex-direction: column; gap: 10px; }
+    .cenario { background: var(--rosa-claro); border-radius: 16px; padding: 12px 14px; }
+    .feedback { border-radius: 16px; padding: 14px; font-weight: 700; line-height: 1.45; }
+    .feedback.ok { background: #DCFCE7; color: var(--verde-escuro); }
+    .feedback.erro { background: #FFE4E6; color: var(--vermelho-escuro); }
+
+    /* ---------- Resultado ---------- */
+    .festa { font-size: 5rem; text-align: center; margin-top: 50px; animation: pula .6s ease 3; }
+    @keyframes pula { 50% { transform: scale(1.2) rotate(-8deg); } }
+
+    /* Respeita quem prefere menos movimento */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+<main class="app">
+
+  <!-- 1. Boas-vindas -->
+  <section class="tela ativa" id="tela-boas-vindas">
+    <div class="logo" aria-hidden="true">💜☁️</div>
+    <h1>CloudSister</h1>
+    <p class="centro suave">Aprenda carreiras em Cloud em poucos minutos por dia.</p>
+    <button class="btn" data-ir="tela-cadastro">Começar</button>
+  </section>
+
+  <!-- 2. Cadastro (nada é salvo) -->
+  <section class="tela" id="tela-cadastro">
+    <h2>Crie seu perfil</h2>
+    <p class="suave">Protótipo: use dados de exemplo. Nada é salvo.</p>
+    <form id="form-cadastro" class="tela ativa" novalidate>
+      <label>Nome <input id="nome" autocomplete="off" placeholder="Ex.: Ana" /></label>
+      <label>Idade <input id="idade" type="number" inputmode="numeric" placeholder="Ex.: 22" /></label>
+      <label>E-mail <input id="email" type="email" placeholder="ana@exemplo.com" /></label>
+      <h3 id="rotulo-avatar">Escolha seu avatar</h3>
+      <div class="avatares" role="radiogroup" aria-labelledby="rotulo-avatar">
+        <button type="button" class="avatar" role="radio" aria-checked="false" aria-label="Foguete">🚀</button>
+        <button type="button" class="avatar" role="radio" aria-checked="false" aria-label="Borboleta">🦋</button>
+        <button type="button" class="avatar" role="radio" aria-checked="false" aria-label="Escudo">🛡️</button>
+        <button type="button" class="avatar" role="radio" aria-checked="false" aria-label="Girassol">🌻</button>
+      </div>
+      <p class="msg-erro" id="erro-cadastro" aria-live="polite"></p>
+      <button class="btn" type="submit">Continuar</button>
+    </form>
+  </section>
+
+  <!-- 3. Pergunta-chave -->
+  <section class="tela" id="tela-pergunta">
+    <div class="logo" aria-hidden="true">🤔☁️</div>
+    <h2 class="centro">Você já sabe o que quer seguir em tech?</h2>
+    <button class="btn" data-ir="tela-trilhas">Sim</button>
+    <button class="btn secundario" id="btn-nao">Não</button>
+  </section>
+
+  <!-- 3a. Escolha direta de trilha -->
+  <section class="tela" id="tela-trilhas">
+    <h2>Escolha sua trilha</h2>
+    <div class="card">
+      <h3>🏗️ Cloud Architect</h3>
+      <p class="suave">Conversa com clientes e desenha soluções na nuvem.</p>
+      <button class="btn" data-trilha="architect">Escolher</button>
+    </div>
+    <div class="card">
+      <h3>🛡️ Cloud Security</h3>
+      <p class="suave">Protege dados e acessos e investiga ameaças.</p>
+      <button class="btn" data-trilha="security">Escolher</button>
+    </div>
+  </section>
+
+  <!-- 3b. Perguntas de perfil + recomendação -->
+  <section class="tela" id="tela-perfil">
+    <div id="perfil-conteudo" class="tela ativa" aria-live="polite"></div>
+  </section>
+
+  <!-- 4. Home / trilha -->
+  <section class="tela" id="tela-home">
+    <div class="topo">
+      <h2 id="home-ola"></h2>
+      <span class="chip" aria-label="Ofensiva de 3 dias">🔥 3 dias</span>
+    </div>
+    <div class="card">
+      <div class="topo">
+        <h3 id="home-trilha"></h3>
+        <span class="chip" id="home-xp"></span>
+      </div>
+      <div class="barra" role="progressbar" aria-label="Progresso da trilha" aria-valuemin="0" aria-valuemax="5" id="home-barra"><div></div></div>
+      <p class="suave" id="home-progresso"></p>
+    </div>
+    <div class="caminho" id="caminho"></div>
+    <p class="aviso" id="home-aviso" aria-live="polite" hidden></p>
+  </section>
+
+  <!-- 5. Pílula 1 -->
+  <section class="tela" id="tela-pilula">
+    <div class="topo">
+      <button class="btn texto" data-ir="tela-home" aria-label="Sair da pílula">✕ Sair</button>
+      <span class="chip">Pílula 1</span>
+    </div>
+
+    <!-- Etapa de estudo: conceito + flashcard -->
+    <div id="etapa-estudo" class="tela ativa">
+      <h2>Conceitos de Cloud</h2>
+      <div class="card">
+        <h3>☁️ O que é cloud?</h3>
+        <p>É usar computadores, armazenamento e bancos de dados de um provedor (como a AWS) pela internet,
+          pagando só pelo que usar. Ela pode ser <b>IaaS</b> (você aluga a infraestrutura),
+          <b>PaaS</b> (a plataforma está pronta para seu código) ou <b>SaaS</b> (o software já vem pronto).</p>
+        <p>A AWS fica espalhada em <b>Regiões</b>, e cada Região tem várias <b>Zonas de Disponibilidade</b>.</p>
+      </div>
+      <button class="flash" id="flash" aria-label="Flashcard. Toque para virar.">
+        <div class="flash-miolo">
+          <div class="face frente">O que é uma Zona de Disponibilidade?<small>Toque para virar</small></div>
+          <div class="face verso" aria-hidden="true">Um ou mais data centers isolados dentro de uma Região. Usar várias zonas mantém o sistema no ar se uma falhar.</div>
+        </div>
+      </button>
+      <button class="btn" id="btn-ir-questoes">Ir para as questões</button>
+    </div>
+
+    <!-- Etapa de questões -->
+    <div id="etapa-questoes" class="tela">
+      <div class="barra" role="progressbar" aria-label="Progresso das questões" aria-valuemin="0" aria-valuemax="3" id="q-barra"><div></div></div>
+      <p class="suave" id="q-contador"></p>
+      <p class="cenario" id="q-cenario"></p>
+      <h2 id="q-pergunta"></h2>
+      <div class="opcoes" id="q-opcoes"></div>
+      <p class="feedback" id="q-feedback" aria-live="polite" hidden></p>
+      <button class="btn" id="btn-continuar" hidden>Continuar</button>
+    </div>
+  </section>
+
+  <!-- 6. Resultado -->
+  <section class="tela" id="tela-resultado">
+    <div class="festa" aria-hidden="true">🎉</div>
+    <h2 class="centro" id="res-titulo"></h2>
+    <p class="centro suave" id="res-detalhe"></p>
+    <button class="btn" data-ir="tela-home">Voltar para a trilha</button>
+  </section>
+
+</main>
+
+<script>
+  // ---------- Estado em memória (nada é salvo) ----------
+  const estado = {
+    nome: '',
+    avatar: '',
+    trilha: 'architect',
+    xp: 0,
+    concluidas: 0,   // pílulas concluídas na trilha
+    pontos: { architect: 0, security: 0 },
+    iPerfil: 0,      // pergunta de perfil atual
+    iQuestao: 0,     // questão atual da pílula
+    xpPilula: 0,
+    acertos: 0,
+  };
+
+  // ---------- Conteúdo ----------
+  const TRILHAS = {
+    architect: {
+      nome: '🏗️ Cloud Architect',
+      pilulas: ['Conceitos de Cloud', 'Serviços essenciais', 'Well-Architected', 'Alta disponibilidade e custos', 'Desafio final'],
+    },
+    security: {
+      nome: '🛡️ Cloud Security',
+      pilulas: ['Conceitos de Cloud', 'Identidade e acesso', 'Proteção de dados', 'Monitoramento', 'Desafio final'],
+    },
+  };
+
+  // Cada pergunta: opção "a" soma para architect, opção "s" para security
+  const PERFIL = [
+    { pergunta: 'Você prefere planejar soluções ou investigar problemas?', a: 'Planejar soluções', s: 'Investigar problemas' },
+    { pergunta: 'Num trabalho em grupo, você costuma…', a: 'Organizar o plano geral', s: 'Revisar se nada está errado' },
+    { pergunta: 'O que te deixa mais satisfeita?', a: 'Resolver o problema de alguém', s: 'Descobrir algo que estava escondido' },
+  ];
+
+  const QUESTOES = [
+    {
+      cenario: 'Um e-commerce cai na Black Friday e o cliente quer gastar pouco no resto do ano.',
+      pergunta: 'O que você sugere?',
+      opcoes: [
+        'Comprar mais servidores físicos para aguentar o pico',
+        'Usar escalabilidade automática: mais servidores no pico e menos depois',
+        'Tirar o site do ar durante a Black Friday',
+      ],
+      correta: 1,
+      explicacao: 'Na cloud você aumenta a capacidade só quando precisa e paga pelo uso. Servidores físicos ficariam parados o resto do ano.',
+    },
+    {
+      cenario: 'Você é arquiteta numa fintech. O app não pode parar se um data center tiver problema.',
+      pergunta: 'Qual a melhor escolha?',
+      opcoes: [
+        'Rodar o app em várias Zonas de Disponibilidade',
+        'Rodar tudo em uma única Zona, com um servidor maior',
+        'Fazer um backup por semana',
+      ],
+      correta: 0,
+      explicacao: 'Zonas de Disponibilidade são isoladas entre si: se uma falha, as outras mantêm o app no ar. Backup semanal não evita a queda.',
+    },
+    {
+      cenario: 'Uma ONG quer e-mail e planilhas online e não tem ninguém para cuidar de servidores.',
+      pergunta: 'Que modelo de cloud combina com ela?',
+      opcoes: ['IaaS', 'PaaS', 'SaaS'],
+      correta: 2,
+      explicacao: 'No SaaS o software já vem pronto e o provedor cuida de tudo. IaaS e PaaS exigiriam alguém técnico para configurar.',
+    },
+  ];
+
+  // ---------- Atalho e navegação ----------
+  const $ = (seletor) => document.querySelector(seletor);
+
+  // Mostra uma tela e esconde as outras; leva o foco ao título (acessibilidade)
+  function mostrar(id) {
+    document.querySelectorAll('main > .tela').forEach((t) => t.classList.toggle('ativa', t.id === id));
+    if (id === 'tela-home') renderHome();
+    const titulo = $('#' + id).querySelector('h1, h2');
+    if (titulo) { titulo.tabIndex = -1; titulo.focus(); }
+    window.scrollTo(0, 0);
+  }
+
+  // Botões com data-ir="id-da-tela" navegam direto
+  document.querySelectorAll('[data-ir]').forEach((b) => b.addEventListener('click', () => mostrar(b.dataset.ir)));
+
+  // ---------- Cadastro ----------
+  document.querySelectorAll('.avatar').forEach((b) => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.avatar').forEach((x) => x.setAttribute('aria-checked', 'false'));
+      b.setAttribute('aria-checked', 'true');
+      estado.avatar = b.textContent;
+    });
+  });
+
+  $('#form-cadastro').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nome = $('#nome').value.trim();
+    const idade = Number($('#idade').value);
+    const email = $('#email').value.trim();
+
+    let erro = '';
+    if (nome.length < 2) erro = 'Digite seu nome.';
+    else if (!(idade >= 14 && idade <= 90)) erro = 'Informe uma idade entre 14 e 90.';
+    else if (!/^\S+@\S+\.\S+$/.test(email)) erro = 'Digite um e-mail válido.';
+    else if (!estado.avatar) erro = 'Escolha um avatar.';
+
+    $('#erro-cadastro').textContent = erro;
+    if (erro) return;
+    estado.nome = nome;
+    mostrar('tela-pergunta');
+  });
+
+  // ---------- Escolha de trilha ----------
+  function escolherTrilha(trilha) {
+    estado.trilha = trilha;
+    estado.concluidas = 0;
+    mostrar('tela-home');
+  }
+  document.querySelectorAll('[data-trilha]').forEach((b) => b.addEventListener('click', () => escolherTrilha(b.dataset.trilha)));
+
+  // ---------- Perguntas de perfil ("Não") ----------
+  $('#btn-nao').addEventListener('click', () => {
+    estado.pontos = { architect: 0, security: 0 };
+    estado.iPerfil = 0;
+    renderPerfil();
+    mostrar('tela-perfil');
+  });
+
+  // Cria um botão com texto e ação (evita repetir código)
+  function criarBotao(texto, classe, acao) {
+    const b = document.createElement('button');
+    b.className = classe;
+    b.textContent = texto;
+    b.addEventListener('click', acao);
+    return b;
+  }
+
+  function renderPerfil() {
+    const box = $('#perfil-conteudo');
+    box.innerHTML = '';
+
+    if (estado.iPerfil < PERFIL.length) {
+      const q = PERFIL[estado.iPerfil];
+      const contador = document.createElement('p');
+      contador.className = 'suave';
+      contador.textContent = `Pergunta ${estado.iPerfil + 1} de ${PERFIL.length}`;
+      const titulo = document.createElement('h2');
+      titulo.textContent = q.pergunta;
+      box.append(
+        contador,
+        titulo,
+        criarBotao(q.a, 'opcao', () => responderPerfil('architect')),
+        criarBotao(q.s, 'opcao', () => responderPerfil('security')),
+      );
+      return;
+    }
+
+    // Fim: recomenda a trilha com mais pontos (3 perguntas = nunca empata)
+    const recomendada = estado.pontos.security > estado.pontos.architect ? 'security' : 'architect';
+    const outra = recomendada === 'architect' ? 'security' : 'architect';
+    const titulo = document.createElement('h2');
+    titulo.textContent = 'Sua trilha recomendada:';
+    const card = document.createElement('div');
+    card.className = 'card';
+    const nome = document.createElement('h3');
+    nome.textContent = TRILHAS[recomendada].nome;
+    const pontos = document.createElement('p');
+    pontos.className = 'suave';
+    pontos.textContent = `Você marcou ${estado.pontos[recomendada]} de ${PERFIL.length} respostas com o perfil dessa carreira.`;
+    card.append(nome, pontos);
+    box.append(
+      titulo,
+      card,
+      criarBotao('Começar esta trilha', 'btn', () => escolherTrilha(recomendada)),
+      criarBotao('Prefiro a outra', 'btn secundario', () => escolherTrilha(outra)),
+    );
+    titulo.tabIndex = -1;
+    titulo.focus();
+  }
+
+  function responderPerfil(eixo) {
+    estado.pontos[eixo]++;
+    estado.iPerfil++;
+    renderPerfil();
+  }
+
+  // ---------- Home ----------
+  function renderHome() {
+    const trilha = TRILHAS[estado.trilha];
+    $('#home-ola').textContent = `${estado.avatar} Oi, ${estado.nome}!`;
+    $('#home-trilha').textContent = trilha.nome;
+    $('#home-xp').textContent = `⭐ ${estado.xp} XP`;
+    $('#home-barra').setAttribute('aria-valuenow', estado.concluidas);
+    $('#home-barra > div').style.width = `${(estado.concluidas / 5) * 100}%`;
+    $('#home-progresso').textContent = `${estado.concluidas} de 5 pílulas concluídas`;
+    $('#home-aviso').hidden = true;
+
+    // Caminho vertical: concluída ✓, liberada (número) ou bloqueada 🔒
+    const caminho = $('#caminho');
+    caminho.innerHTML = '';
+    trilha.pilulas.forEach((titulo, i) => {
+      let classe = 'pilula';
+      let simbolo = String(i + 1);
+      let situacao = 'liberada';
+      if (i < estado.concluidas) { classe += ' feita'; simbolo = '✓'; situacao = 'concluída'; }
+      else if (i > estado.concluidas) { classe += ' bloqueada'; simbolo = '🔒'; situacao = 'bloqueada'; }
+
+      const b = criarBotao(simbolo, classe, () => clicarPilula(i));
+      b.setAttribute('aria-label', `Pílula ${i + 1}: ${titulo}, ${situacao}`);
+      caminho.append(b);
+    });
+  }
+
+  function clicarPilula(i) {
+    const aviso = $('#home-aviso');
+    if (i === 0) return abrirPilula();
+    aviso.textContent = i > estado.concluidas
+      ? '🔒 Conclua a pílula anterior para liberar esta.'
+      : 'Esta pílula chega na próxima versão do protótipo. 💜';
+    aviso.hidden = false;
+  }
+
+  // ---------- Pílula ----------
+  function abrirPilula() {
+    estado.iQuestao = 0;
+    estado.xpPilula = 0;
+    estado.acertos = 0;
+    $('#flash').classList.remove('virado');
+    $('#etapa-estudo').classList.add('ativa');
+    $('#etapa-questoes').classList.remove('ativa');
+    mostrar('tela-pilula');
+  }
+
+  // Flashcard: vira ao clicar e avisa o leitor de tela qual face está visível
+  $('#flash').addEventListener('click', () => {
+    const virado = $('#flash').classList.toggle('virado');
+    $('.frente').setAttribute('aria-hidden', virado);
+    $('.verso').setAttribute('aria-hidden', !virado);
+  });
+
+  $('#btn-ir-questoes').addEventListener('click', () => {
+    $('#etapa-estudo').classList.remove('ativa');
+    $('#etapa-questoes').classList.add('ativa');
+    renderQuestao();
+  });
+
+  function renderQuestao() {
+    const q = QUESTOES[estado.iQuestao];
+    $('#q-barra').setAttribute('aria-valuenow', estado.iQuestao);
+    $('#q-barra > div').style.width = `${(estado.iQuestao / QUESTOES.length) * 100}%`;
+    $('#q-contador').textContent = `Questão ${estado.iQuestao + 1} de ${QUESTOES.length}`;
+    $('#q-cenario').textContent = '📍 ' + q.cenario;
+    $('#q-pergunta').textContent = q.pergunta;
+    $('#q-feedback').hidden = true;
+    $('#btn-continuar').hidden = true;
+
+    const opcoes = $('#q-opcoes');
+    opcoes.innerHTML = '';
+    q.opcoes.forEach((texto, i) => opcoes.append(criarBotao(texto, 'opcao', () => responder(i))));
+    $('#q-pergunta').tabIndex = -1;
+    $('#q-pergunta').focus();
+  }
+
+  function responder(escolhida) {
+    const q = QUESTOES[estado.iQuestao];
+    const botoes = [...$('#q-opcoes').children];
+    const feedback = $('#q-feedback');
+
+    botoes.forEach((b) => (b.disabled = true));
+    botoes[q.correta].classList.add('certa');
+
+    if (escolhida === q.correta) {
+      estado.xpPilula += 10;
+      estado.acertos++;
+      feedback.className = 'feedback ok';
+      feedback.textContent = 'Isso aí! +10 XP 💜';
+    } else {
+      // Erro: mostra a resposta certa e o porquê
+      botoes[escolhida].classList.add('errada');
+      feedback.className = 'feedback erro';
+      feedback.textContent = `Quase! A resposta certa é: "${q.opcoes[q.correta]}". ${q.explicacao}`;
+    }
+
+    feedback.hidden = false;
+    const ultima = estado.iQuestao === QUESTOES.length - 1;
+    $('#btn-continuar').textContent = ultima ? 'Ver resultado' : 'Continuar';
+    $('#btn-continuar').hidden = false;
+    $('#btn-continuar').focus();
+  }
+
+  $('#btn-continuar').addEventListener('click', () => {
+    if (estado.iQuestao < QUESTOES.length - 1) {
+      estado.iQuestao++;
+      renderQuestao();
+    } else {
+      concluirPilula();
+    }
+  });
+
+  // ---------- Resultado ----------
+  function concluirPilula() {
+    estado.xp += estado.xpPilula;
+    estado.concluidas = Math.max(estado.concluidas, 1);
+    $('#res-titulo').textContent = `Pílula concluída! +${estado.xpPilula} XP 🎉`;
+    $('#res-detalhe').textContent = `Você acertou ${estado.acertos} de ${QUESTOES.length} questões.`;
+    mostrar('tela-resultado');
+  }
+</script>
+</body>
+</html>

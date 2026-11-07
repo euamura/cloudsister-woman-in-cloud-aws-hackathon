@@ -1,0 +1,32 @@
+[
+  {
+    "id": "seed-ana",
+    "nome": "Ana",
+    "idade": 22,
+    "usuario": "ana",
+    "afinidadeTech": "um_pouco",
+    "avatarId": "foguete",
+    "descricao": "Universitária",
+    "respostasPerfil": { "momento": "estudando", "objetivo": "estagio", "experiencia": "pouca" }
+  },
+  {
+    "id": "seed-carla",
+    "nome": "Carla",
+    "idade": 35,
+    "usuario": "carla",
+    "afinidadeTech": "nenhuma",
+    "avatarId": "girassol",
+    "descricao": "Ex-professora em transição de carreira",
+    "respostasPerfil": { "momento": "outra_area", "objetivo": "mudar", "experiencia": "educacao" }
+  },
+  {
+    "id": "seed-julia",
+    "nome": "Júlia",
+    "idade": 27,
+    "usuario": "julia",
+    "afinidadeTech": "trabalho_com_isso",
+    "avatarId": "escudo",
+    "descricao": "Analista de suporte",
+    "respostasPerfil": { "momento": "ja_tech", "objetivo": "crescer", "experiencia": "atendimento" }
+  }
+]

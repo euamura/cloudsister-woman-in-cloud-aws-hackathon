@@ -1,0 +1,227 @@
+{
+  "id": "cloud-architect",
+  "titulo": "Cloud / Solutions Architect",
+  "fontes": [
+    "Amazon Web Services concepts (Regions and Availability Zones)",
+    "The pillars of the Well-Architected Framework",
+    "Amazon EC2 Auto Scaling FAQs"
+  ],
+  "pilulas": [
+    {
+      "id": "ca-01",
+      "ordem": 1,
+      "titulo": "Conceitos de cloud",
+      "nivel": "basico",
+      "duracaoMin": 6,
+      "conceito": {
+        "texto": "Cloud é usar computação, armazenamento e bancos de dados de um provedor pela internet, pagando pelo que usar. Existem três modelos: IaaS (você aluga a infraestrutura e cuida do resto), PaaS (a plataforma está pronta e você traz o código) e SaaS (o software já vem pronto). A AWS se organiza em Regiões, áreas geográficas isoladas entre si. Cada Região tem várias Zonas de Disponibilidade, cada uma com infraestrutura física própria e independente.",
+        "exemplo": "No estágio, você ajuda o time a escolher a Região de São Paulo para o app ficar mais rápido para clientes no Brasil."
+      },
+      "flashcards": [
+        { "frente": "O que é uma Região da AWS?", "verso": "Uma área geográfica separada e isolada das outras. Os recursos não são copiados entre Regiões, a não ser que você configure isso." },
+        { "frente": "O que é uma Zona de Disponibilidade?", "verso": "Um local isolado dentro de uma Região, com infraestrutura física independente. Usar mais de uma deixa o sistema mais resistente a falhas." },
+        { "frente": "O que é SaaS?", "verso": "Software como serviço: o programa já vem pronto e o provedor cuida de tudo. Ex.: e-mail e planilhas online." }
+      ],
+      "questoes": [
+        {
+          "id": "ca-01-q1",
+          "tipo": "multipla_escolha",
+          "categoria": "tecnica",
+          "cenario": "Uma startup vai lançar um app para clientes no Brasil e na Europa.",
+          "pergunta": "Como você escolhe onde rodar o app?",
+          "opcoes": [
+            "Uma Região perto de cada público",
+            "Sempre a Região mais barata, não importa onde fica",
+            "Qualquer uma: os dados vão para todas as Regiões sozinhos",
+            "Tanto faz, a distância não muda nada"
+          ],
+          "correta": 0,
+          "explicacao": "Regiões próximas deixam o app mais rápido e ajudam a cumprir leis locais. E os dados não são copiados entre Regiões automaticamente.",
+          "referenciaConceito": "A AWS se organiza em Regiões, áreas geográficas isoladas entre si."
+        },
+        {
+          "id": "ca-01-q2",
+          "tipo": "verdadeiro_falso",
+          "categoria": "tecnica",
+          "cenario": "Um colega diz que não precisa pensar em backup porque a AWS copia tudo para outras Regiões.",
+          "pergunta": "Os dados de uma Região são copiados para as outras Regiões automaticamente.",
+          "opcoes": ["Verdadeiro", "Falso"],
+          "correta": 1,
+          "explicacao": "Os recursos ficam na Região escolhida. Copiar para outra Região é uma decisão sua, que precisa ser configurada.",
+          "referenciaConceito": "A AWS se organiza em Regiões, áreas geográficas isoladas entre si."
+        },
+        {
+          "id": "ca-01-q3",
+          "tipo": "multipla_escolha",
+          "categoria": "negocio",
+          "cenario": "Uma ONG quer e-mail e planilhas online e não tem ninguém para cuidar de servidores.",
+          "pergunta": "Qual modelo de cloud combina com ela?",
+          "opcoes": ["IaaS", "PaaS", "SaaS"],
+          "correta": 2,
+          "explicacao": "No SaaS o software já vem pronto e o provedor cuida da manutenção. IaaS e PaaS exigiriam alguém técnico para configurar.",
+          "referenciaConceito": "SaaS (o software já vem pronto)."
+        },
+        {
+          "id": "ca-01-q4",
+          "tipo": "multipla_escolha",
+          "categoria": "negocio",
+          "cenario": "Um e-commerce recebe 10 vezes mais visitas na Black Friday e quer gastar pouco no resto do ano.",
+          "pergunta": "Por que a cloud ajuda esse cliente?",
+          "opcoes": [
+            "Ele paga pelo uso e aumenta a capacidade só no pico",
+            "A cloud é sempre gratuita para lojas",
+            "Ele precisa comprar servidores para o pico e guardar o resto do ano",
+            "A cloud bloqueia visitas em excesso"
+          ],
+          "correta": 0,
+          "explicacao": "Na cloud você aumenta a capacidade quando precisa e paga pelo que usa. Comprar servidores para o pico deixaria máquinas paradas o resto do ano.",
+          "referenciaConceito": "Cloud é usar computação, armazenamento e bancos de dados de um provedor pela internet, pagando pelo que usar."
+        }
+      ]
+    },
+    {
+      "id": "ca-02",
+      "ordem": 2,
+      "titulo": "Serviços essenciais e Well-Architected",
+      "nivel": "intermediario",
+      "duracaoMin": 8,
+      "conceito": {
+        "texto": "Três serviços aparecem em quase todo projeto: Amazon EC2 (servidores virtuais), Amazon S3 (armazenamento de arquivos) e Amazon RDS (bancos de dados relacionais gerenciados). Para avaliar se uma solução está bem desenhada, a AWS usa o Well-Architected Framework, com seis pilares: excelência operacional, segurança, confiabilidade, eficiência de performance, otimização de custos e sustentabilidade.",
+        "exemplo": "Uma loja virtual roda o site no EC2, guarda as fotos dos produtos no S3 e salva os pedidos no RDS."
+      },
+      "flashcards": [
+        { "frente": "Para que serve o Amazon EC2?", "verso": "Para criar servidores virtuais (instâncias) na nuvem, com o tamanho que você precisar." },
+        { "frente": "Para que serve o Amazon S3?", "verso": "Para guardar arquivos (objetos) como fotos, PDFs e backups, com acesso de qualquer lugar." },
+        { "frente": "Quais são os 6 pilares do Well-Architected?", "verso": "Excelência operacional, segurança, confiabilidade, eficiência de performance, otimização de custos e sustentabilidade." }
+      ],
+      "questoes": [
+        {
+          "id": "ca-02-q1",
+          "tipo": "multipla_escolha",
+          "categoria": "tecnica",
+          "cenario": "Uma escola quer guardar milhares de PDFs de provas e acessá-los de qualquer lugar.",
+          "pergunta": "Qual serviço você indica?",
+          "opcoes": ["Amazon S3", "Amazon EC2", "Amazon RDS", "Um disco no computador da secretaria"],
+          "correta": 0,
+          "explicacao": "O S3 foi feito para guardar arquivos com segurança e acesso de qualquer lugar. EC2 é servidor e RDS é banco de dados.",
+          "referenciaConceito": "Amazon S3 (armazenamento de arquivos)."
+        },
+        {
+          "id": "ca-02-q2",
+          "tipo": "multipla_escolha",
+          "categoria": "tecnica",
+          "cenario": "Um app de agendamento precisa de um banco de dados relacional, mas o time não quer cuidar de backups e atualizações.",
+          "pergunta": "Qual a melhor opção?",
+          "opcoes": [
+            "Amazon RDS",
+            "Instalar o banco num EC2 e cuidar de tudo manualmente",
+            "Salvar os agendamentos em arquivos no S3",
+            "Uma planilha compartilhada"
+          ],
+          "correta": 0,
+          "explicacao": "O RDS é gerenciado: a AWS cuida de tarefas como backups e atualizações. No EC2 todo esse trabalho seria do time.",
+          "referenciaConceito": "Amazon RDS (bancos de dados relacionais gerenciados)."
+        },
+        {
+          "id": "ca-02-q3",
+          "tipo": "multipla_escolha",
+          "categoria": "negocio",
+          "cenario": "A cliente reclama: \"pagamos por servidores ligados a noite toda, sem ninguém usando\".",
+          "pergunta": "Qual pilar do Well-Architected trata principalmente disso?",
+          "opcoes": ["Otimização de custos", "Segurança", "Excelência operacional", "Confiabilidade"],
+          "correta": 0,
+          "explicacao": "Evitar gasto com recursos ociosos é o foco de otimização de custos. Segurança e confiabilidade tratam de proteção e de manter o sistema funcionando.",
+          "referenciaConceito": "Seis pilares: excelência operacional, segurança, confiabilidade, eficiência de performance, otimização de custos e sustentabilidade."
+        },
+        {
+          "id": "ca-02-q4",
+          "tipo": "verdadeiro_falso",
+          "categoria": "tecnica",
+          "cenario": "Na entrevista de estágio, perguntam quantos pilares tem o Well-Architected Framework.",
+          "pergunta": "O Well-Architected Framework tem cinco pilares.",
+          "opcoes": ["Verdadeiro", "Falso"],
+          "correta": 1,
+          "explicacao": "São seis pilares. A sustentabilidade foi o mais recente a entrar na lista.",
+          "referenciaConceito": "Seis pilares: excelência operacional, segurança, confiabilidade, eficiência de performance, otimização de custos e sustentabilidade."
+        }
+      ]
+    },
+    {
+      "id": "ca-03",
+      "ordem": 3,
+      "titulo": "Desafio: alta disponibilidade e custos",
+      "nivel": "avancado",
+      "duracaoMin": 10,
+      "conceito": {
+        "texto": "Alta disponibilidade é manter o sistema no ar mesmo quando algo falha. Para isso, a aplicação roda em mais de uma Zona de Disponibilidade, com um load balancer distribuindo o tráfego. Escalabilidade é acompanhar a demanda: o Amazon EC2 Auto Scaling adiciona instâncias quando o uso sobe, remove quando cai e substitui instâncias com problema. Assim o sistema aguenta picos e você paga pelo que usa.",
+        "exemplo": "Cenário do desafio: uma rede de farmácias vai lançar vendas online, com picos no início de cada mês. Ela precisa de um site que não caia e caiba no orçamento."
+      },
+      "flashcards": [
+        { "frente": "O que é alta disponibilidade?", "verso": "Manter o sistema funcionando mesmo quando uma parte falha, por exemplo espalhando-o em várias Zonas de Disponibilidade." },
+        { "frente": "O que faz o EC2 Auto Scaling?", "verso": "Aumenta ou diminui a quantidade de instâncias conforme a demanda e troca instâncias com problema sem intervenção manual." },
+        { "frente": "Para que serve um load balancer?", "verso": "Para distribuir o tráfego entre várias instâncias, inclusive em Zonas diferentes, e evitar sobrecarga em uma só." }
+      ],
+      "questoes": [
+        {
+          "id": "ca-03-q1",
+          "tipo": "multipla_escolha",
+          "categoria": "tecnica",
+          "cenario": "A farmácia não pode ficar fora do ar se uma Zona de Disponibilidade tiver problema.",
+          "pergunta": "Qual desenho você propõe?",
+          "opcoes": [
+            "Instâncias em duas ou mais Zonas, atrás de um load balancer",
+            "Uma única instância bem grande em uma Zona",
+            "Duas instâncias na mesma Zona",
+            "Uma instância e um backup diário no S3"
+          ],
+          "correta": 0,
+          "explicacao": "Se uma Zona falhar, as instâncias da outra continuam atendendo e o load balancer redireciona o tráfego. Tudo numa Zona só cai junto; backup não evita a queda.",
+          "referenciaConceito": "A aplicação roda em mais de uma Zona de Disponibilidade, com um load balancer distribuindo o tráfego."
+        },
+        {
+          "id": "ca-03-q2",
+          "tipo": "multipla_escolha",
+          "categoria": "tecnica",
+          "cenario": "As vendas explodem nos primeiros 5 dias do mês e ficam baixas no resto.",
+          "pergunta": "Como lidar com esse padrão gastando pouco?",
+          "opcoes": [
+            "Auto Scaling que adiciona instâncias quando o uso sobe e remove quando cai",
+            "Manter 20 instâncias ligadas o mês inteiro",
+            "Aumentar a capacidade manualmente quando os clientes reclamarem",
+            "Desligar o site fora dos dias de pico"
+          ],
+          "correta": 0,
+          "explicacao": "O Auto Scaling acompanha a demanda: capacidade extra só no pico. Deixar 20 instâncias ligadas paga ociosidade; esperar reclamação perde vendas.",
+          "referenciaConceito": "O Amazon EC2 Auto Scaling adiciona instâncias quando o uso sobe, remove quando cai."
+        },
+        {
+          "id": "ca-03-q3",
+          "tipo": "multipla_escolha",
+          "categoria": "negocio",
+          "cenario": "A diretora financeira pergunta por que a solução em duas Zonas custa um pouco mais do que uma.",
+          "pergunta": "Qual a melhor resposta?",
+          "opcoes": [
+            "O custo extra é menor que o prejuízo de ficar fora do ar num dia de pico",
+            "A AWS cobra uma taxa fixa por Zona usada",
+            "Não custa mais, o preço é igual",
+            "É uma exigência legal para farmácias"
+          ],
+          "correta": 0,
+          "explicacao": "A arquiteta traduz técnica em negócio: compare o custo da redundância com a perda de vendas e de confiança numa queda. As outras respostas não são verdadeiras.",
+          "referenciaConceito": "Alta disponibilidade é manter o sistema no ar mesmo quando algo falha."
+        },
+        {
+          "id": "ca-03-q4",
+          "tipo": "verdadeiro_falso",
+          "categoria": "tecnica",
+          "cenario": "Às 2h da manhã, uma das instâncias do site para de responder.",
+          "pergunta": "Com o EC2 Auto Scaling, uma instância com problema pode ser substituída automaticamente.",
+          "opcoes": ["Verdadeiro", "Falso"],
+          "correta": 0,
+          "explicacao": "O Auto Scaling detecta instâncias com problema e as substitui sem intervenção, mantendo a capacidade esperada.",
+          "referenciaConceito": "O Amazon EC2 Auto Scaling [...] substitui instâncias com problema."
+        }
+      ]
+    }
+  ]
+}

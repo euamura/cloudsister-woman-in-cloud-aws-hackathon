@@ -1,0 +1,34 @@
+[
+  {
+    "id": "momento",
+    "pergunta": "Qual frase descreve melhor o seu momento?",
+    "opcoes": [
+      { "id": "estudando", "texto": "Estou estudando (faculdade, curso técnico ou cursinho)", "pontos": { "inicio": 2 } },
+      { "id": "comecando", "texto": "Estou começando a carreira ou buscando o 1º emprego", "pontos": { "inicio": 2 } },
+      { "id": "outra_area", "texto": "Trabalho em outra área e quero mudar para tech", "pontos": { "transicao": 2 } },
+      { "id": "recolocacao", "texto": "Estou buscando recolocação no mercado", "pontos": { "transicao": 2 } },
+      { "id": "ja_tech", "texto": "Já trabalho com tecnologia e quero ir para cloud", "pontos": {} }
+    ]
+  },
+  {
+    "id": "objetivo",
+    "pergunta": "O que você mais quer agora?",
+    "opcoes": [
+      { "id": "estagio", "texto": "Conseguir um estágio ou a primeira vaga", "pontos": { "inicio": 1 } },
+      { "id": "mudar", "texto": "Mudar de carreira com segurança", "pontos": { "transicao": 1 } },
+      { "id": "crescer", "texto": "Crescer na área em que já estou", "pontos": {} },
+      { "id": "curiosidade", "texto": "Entender melhor o que é cloud", "pontos": {} }
+    ]
+  },
+  {
+    "id": "experiencia",
+    "pergunta": "Onde está a maior parte da sua experiência?",
+    "opcoes": [
+      { "id": "educacao", "texto": "Educação: dar aulas ou treinar pessoas", "pontos": { "transicao": 1 }, "competencia": "Comunicação com stakeholders" },
+      { "id": "administrativo", "texto": "Administrativo ou financeiro", "pontos": { "transicao": 1 }, "competencia": "Processos e governança" },
+      { "id": "atendimento", "texto": "Atendimento, suporte ou vendas", "pontos": { "transicao": 1 }, "competencia": "Resolução de problemas com foco no cliente" },
+      { "id": "saude", "texto": "Saúde ou outra área com protocolos rígidos", "pontos": { "transicao": 1 }, "competencia": "Atenção a detalhes e protocolos" },
+      { "id": "pouca", "texto": "Ainda tenho pouca experiência profissional", "pontos": { "inicio": 1 } }
+    ]
+  }
+]

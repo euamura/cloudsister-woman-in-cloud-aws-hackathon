@@ -1,0 +1,10 @@
+[
+  { "id": "nuvem", "emoji": "☁️", "cor": "#DDD6FE", "rotulo": "Nuvem" },
+  { "id": "foguete", "emoji": "🚀", "cor": "#FBCFE8", "rotulo": "Foguete" },
+  { "id": "escudo", "emoji": "🛡️", "cor": "#BFDBFE", "rotulo": "Escudo" },
+  { "id": "raio", "emoji": "⚡", "cor": "#FDE68A", "rotulo": "Raio" },
+  { "id": "borboleta", "emoji": "🦋", "cor": "#C7D2FE", "rotulo": "Borboleta" },
+  { "id": "girassol", "emoji": "🌻", "cor": "#FEF08A", "rotulo": "Girassol" },
+  { "id": "cristal", "emoji": "🔮", "cor": "#E9D5FF", "rotulo": "Cristal" },
+  { "id": "polvo", "emoji": "🐙", "cor": "#FECDD3", "rotulo": "Polvo" }
+]

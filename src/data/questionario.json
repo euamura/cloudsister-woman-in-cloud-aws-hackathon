@@ -1,0 +1,46 @@
+[
+  {
+    "id": "q1",
+    "pergunta": "Num trabalho em grupo, você costuma…",
+    "opcoes": [
+      { "id": "a", "texto": "Organizar o plano geral", "pontos": { "architect": 2 } },
+      { "id": "b", "texto": "Revisar se nada está errado", "pontos": { "security": 2 } },
+      { "id": "c", "texto": "Apresentar para a turma", "pontos": { "architect": 1 } }
+    ]
+  },
+  {
+    "id": "q2",
+    "pergunta": "O que te deixa mais satisfeita?",
+    "opcoes": [
+      { "id": "a", "texto": "Resolver o problema de alguém", "pontos": { "architect": 2 } },
+      { "id": "b", "texto": "Descobrir algo que estava escondido", "pontos": { "security": 2 } }
+    ]
+  },
+  {
+    "id": "q3",
+    "pergunta": "Você prefere…",
+    "opcoes": [
+      { "id": "a", "texto": "Conversar com pessoas e entender o que precisam", "pontos": { "architect": 2 } },
+      { "id": "b", "texto": "Investigar detalhes e regras", "pontos": { "security": 2 } }
+    ]
+  },
+  {
+    "id": "q4",
+    "pergunta": "Qual experiência se parece mais com a sua?",
+    "opcoes": [
+      { "id": "a", "texto": "Ensinar ou explicar para pessoas", "pontos": { "architect": 1 }, "competencia": "Comunicação com stakeholders" },
+      { "id": "b", "texto": "Organizar processos e documentos", "pontos": { "security": 1 }, "competencia": "Processos e governança" },
+      { "id": "c", "texto": "Atender e resolver dúvidas de clientes", "pontos": { "architect": 1 }, "competencia": "Resolução de problemas" },
+      { "id": "d", "texto": "Estou começando agora", "pontos": {} }
+    ]
+  },
+  {
+    "id": "q5",
+    "pergunta": "Num dia de trabalho, o que você faria primeiro?",
+    "opcoes": [
+      { "id": "a", "texto": "Desenhar como o sistema vai crescer", "pontos": { "architect": 2 } },
+      { "id": "b", "texto": "Conferir quem tem acesso a quê", "pontos": { "security": 2 } },
+      { "id": "c", "texto": "Calcular quanto vai custar", "pontos": { "architect": 1 } }
+    ]
+  }
+]
