@@ -3,6 +3,10 @@
 Protótipo de um app mobile que orienta e capacita mulheres para carreiras em Cloud. A experiência segue o estilo do Duolingo: aprendizado diário, rápido e gamificado, com pílulas de poucos minutos, XP, ofensiva (streak) e alertas para manter o ritmo.
 
 > Projeto criado no **Hackathon Women in Cloud 2026**, desenvolvido com o **Kiro** em **3 horas**.
+>
+> ## Demonstração do CloudSister
+
+![Demonstração do CloudSister](video/kiro.gif)
 
 ## 🎬 Vídeo do projeto
 
