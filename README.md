@@ -4,17 +4,9 @@ Protótipo de um app mobile que orienta e capacita mulheres para carreiras em Cl
 
 > Projeto criado no **Hackathon Women in Cloud 2026**, desenvolvido com o **Kiro** em **3 horas**.
 >
-> ## Demonstração do CloudSister
+> ### Demonstração do CloudSister
 
 ![Demonstração do CloudSister](video/kiro.gif)
-
-## 🎬 Vídeo do projeto
-
-<video src="./video/kiro.mp4" controls width="100%" title="Vídeo do projeto CloudSister desenvolvido com o Kiro">
-  Seu visualizador não exibe vídeo. <a href="./video/kiro.mp4">Baixe o vídeo kiro.mp4</a>.
-</video>
-
-Se o player não aparecer, [abra o vídeo (`video/kiro.mp4`)](./video/kiro.mp4).
 
 ---
 
